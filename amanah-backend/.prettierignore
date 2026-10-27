@@ -1,0 +1,7 @@
+node_modules/
+dist/
+coverage/
+docs/openapi.json
+prisma/schema.prisma
+prisma/migrations/
+pnpm-lock.yaml

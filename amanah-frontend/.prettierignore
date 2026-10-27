@@ -1,0 +1,8 @@
+node_modules/
+.expo/
+dist/
+coverage/
+contracts/openapi.json
+src/core/api/schema.d.ts
+src/core/api/response-validators.ts
+pnpm-lock.yaml

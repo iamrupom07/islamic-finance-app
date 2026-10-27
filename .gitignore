@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Expo & Mobile builds
+.expo/
+*/.expo/
+android/
+*/android/
+ios/
+*/ios/
+*.keystore
+*.p8
+
+# Build outputs
+dist/
+*/dist/
+build/
+*/build/
+coverage/
+*/coverage/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+*/*.env
+*/*.env.*
+!*/*.env.example
+*.pem
+*.key
+
+# Local service data
+.local-mail
+*/.local-mail
+
+# Operating system & IDE
+.DS_Store
+*/.DS_Store
+Thumbs.db
+.vscode/
+.idea/

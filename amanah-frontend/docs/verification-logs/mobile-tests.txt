@@ -1,0 +1,34 @@
+$ jest --runInBand
+PASS tests/screens.test.tsx
+  ● Console
+
+    console.warn
+      expo-notifications: Android Push notifications (remote notifications) functionality provided by expo-notifications was removed from Expo Go with the release of SDK 53. Use a development build instead of Expo Go. Learn more at https://docs.expo.dev/develop/development-builds/introduction/.
+
+      3 | import { useRouter } from "expo-router";
+      4 | import { useQuery } from "@tanstack/react-query";
+    > 5 | import * as Notifications from "expo-notifications";
+        | ^
+      6 | import Constants from "expo-constants";
+      7 | import {
+      8 |   Screen,
+
+      at warn (node_modules/expo-notifications/build/warnOfExpoGoPushUsage.ts:13:15)
+      at addPushTokenListener (node_modules/expo-notifications/build/TokenEmitter.ts:44:3)
+      at Object.<anonymous> (node_modules/expo-notifications/build/DevicePushTokenAutoRegistration.fx.ts:109:3)
+      at Object.require (node_modules/expo-notifications/build/getExpoPushTokenAsync.ts:5:1)
+      at Object.require (node_modules/expo-notifications/build/index.ts:16:1)
+      at Object.require (src/features/settings/SettingsScreens.tsx:5:1)
+      at Object.require (tests/screens.test.tsx:37:1)
+
+PASS tests/components.test.tsx
+PASS tests/encryption.test.ts
+PASS tests/contract.test.ts
+PASS tests/session.test.ts
+PASS tests/domain.test.ts
+
+Test Suites: 6 passed, 6 total
+Tests:       79 passed, 79 total
+Snapshots:   0 total
+Time:        1.947 s, estimated 4 s
+Ran all test suites.

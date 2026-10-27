@@ -1,0 +1,478 @@
+[
+  {
+    "promptId": "A1",
+    "routeOrState": "/",
+    "implementation": "src/app/index.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "A2.1",
+    "routeOrState": "/welcome",
+    "implementation": "src/features/onboarding/WelcomeScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "A2.2",
+    "routeOrState": "/welcome",
+    "implementation": "src/features/onboarding/WelcomeScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "A2.3",
+    "routeOrState": "/welcome",
+    "implementation": "src/features/onboarding/WelcomeScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "A3.1",
+    "routeOrState": "/register",
+    "implementation": "src/features/auth/AuthScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "A3.2",
+    "routeOrState": "/login",
+    "implementation": "src/features/auth/AuthScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "A3.3",
+    "routeOrState": "/reset-password",
+    "implementation": "src/features/auth/AuthScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "A3-error",
+    "routeOrState": "/login",
+    "implementation": "src/features/auth/AuthScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "A4",
+    "routeOrState": "/permissions",
+    "implementation": "src/features/onboarding/SetupScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "A4.1",
+    "routeOrState": "/city",
+    "implementation": "src/features/onboarding/SetupScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "A4-denied",
+    "routeOrState": "/permissions",
+    "implementation": "src/features/onboarding/SetupScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "A5.1",
+    "routeOrState": "/currency",
+    "implementation": "src/features/onboarding/SetupScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "A5.2",
+    "routeOrState": "/nisab",
+    "implementation": "src/features/onboarding/SetupScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "A5.3",
+    "routeOrState": "/prayer-preferences",
+    "implementation": "src/features/onboarding/SetupScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "B1",
+    "routeOrState": "/home",
+    "implementation": "src/features/home/HomeScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "B1-empty",
+    "routeOrState": "/home",
+    "implementation": "src/features/home/HomeScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "B2",
+    "routeOrState": "/finance",
+    "implementation": "src/features/finance/FinanceScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "B2-empty",
+    "routeOrState": "/finance",
+    "implementation": "src/features/finance/FinanceScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "E1",
+    "routeOrState": "/transactions",
+    "implementation": "src/features/finance/TransactionScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "E1-empty",
+    "routeOrState": "/transactions",
+    "implementation": "src/features/finance/TransactionScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "E2",
+    "routeOrState": "/transactions/new?type=INCOME",
+    "implementation": "src/features/finance/TransactionForm.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "E2-invalid",
+    "routeOrState": "/transactions/new?type=INCOME",
+    "implementation": "src/features/finance/TransactionForm.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "E3",
+    "routeOrState": "/transactions/new?type=EXPENSE",
+    "implementation": "src/features/finance/TransactionForm.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "E4",
+    "routeOrState": "/transactions/[id]",
+    "implementation": "src/features/finance/TransactionScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "E4-edit",
+    "routeOrState": "/transactions/[id]",
+    "implementation": "src/features/finance/TransactionScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "E5-list",
+    "routeOrState": "/assets",
+    "implementation": "src/features/assets/HoldingsScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "E5-empty",
+    "routeOrState": "/assets",
+    "implementation": "src/features/assets/HoldingsScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "E5-edit",
+    "routeOrState": "/assets/new",
+    "implementation": "src/features/assets/AssetForm.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "E6-list",
+    "routeOrState": "/debts",
+    "implementation": "src/features/assets/HoldingsScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "E6-empty",
+    "routeOrState": "/debts",
+    "implementation": "src/features/assets/HoldingsScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "E6-edit",
+    "routeOrState": "/debts/new",
+    "implementation": "src/features/debts/DebtForm.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "E6-settle",
+    "routeOrState": "/debts",
+    "implementation": "src/features/assets/HoldingsScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "F1",
+    "routeOrState": "/zakat",
+    "implementation": "src/features/zakat/ZakatScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "F1-below",
+    "routeOrState": "/zakat",
+    "implementation": "src/features/zakat/ZakatScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "F1-stale",
+    "routeOrState": "/zakat",
+    "implementation": "src/features/zakat/ZakatScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "F1-due",
+    "routeOrState": "/zakat",
+    "implementation": "src/features/zakat/ZakatScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "F2",
+    "routeOrState": "/zakat/record-payment",
+    "implementation": "src/features/zakat/ZakatScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "F2-success",
+    "routeOrState": "/zakat/success",
+    "implementation": "src/features/zakat/ZakatScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "F3",
+    "routeOrState": "/zakat/history",
+    "implementation": "src/features/zakat/ZakatScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "F3-detail",
+    "routeOrState": "/zakat/history/[id]",
+    "implementation": "src/features/zakat/ZakatScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "F3-empty",
+    "routeOrState": "/zakat/history",
+    "implementation": "src/features/zakat/ZakatScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "G1",
+    "routeOrState": "/prayer",
+    "implementation": "src/features/prayer/PrayerScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "G1-offline",
+    "routeOrState": "/prayer",
+    "implementation": "src/features/prayer/PrayerScreen.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "C1",
+    "routeOrState": "/quran",
+    "implementation": "src/features/quran/QuranScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "C2",
+    "routeOrState": "/quran/[surah]",
+    "implementation": "src/features/quran/QuranScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "C2-unavailable",
+    "routeOrState": "/quran/[surah]",
+    "implementation": "src/features/quran/QuranScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "C3",
+    "routeOrState": "/quran/bookmarks",
+    "implementation": "src/features/quran/QuranScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "C3-empty",
+    "routeOrState": "/quran/bookmarks",
+    "implementation": "src/features/quran/QuranScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "D1",
+    "routeOrState": "/dua",
+    "implementation": "src/features/dua/DuaScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "D2",
+    "routeOrState": "/dua/[category]",
+    "implementation": "src/features/dua/DuaScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "D3",
+    "routeOrState": "/dua/detail/[id]",
+    "implementation": "src/features/dua/DuaScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "D1-favorites",
+    "routeOrState": "/dua/favorites",
+    "implementation": "src/features/dua/DuaScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "H1",
+    "routeOrState": "/profile",
+    "implementation": "src/features/settings/SettingsScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "H2",
+    "routeOrState": "/settings/currency",
+    "implementation": "src/features/settings/SettingsScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "H3",
+    "routeOrState": "/settings/notification",
+    "implementation": "src/features/settings/SettingsScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "H4",
+    "routeOrState": "/settings/about",
+    "implementation": "src/features/settings/SettingsScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "H1-appearance",
+    "routeOrState": "/settings/appearance",
+    "implementation": "src/features/settings/SettingsScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "H1-language",
+    "routeOrState": "/settings/language",
+    "implementation": "src/features/settings/SettingsScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "H1-location",
+    "routeOrState": "/settings/location",
+    "implementation": "src/features/settings/SettingsScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "H1-export",
+    "routeOrState": "/settings/export",
+    "implementation": "src/features/settings/SettingsScreens.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "I1",
+    "routeOrState": "shared state",
+    "implementation": "src/design-system/components.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "I2",
+    "routeOrState": "shared state",
+    "implementation": "src/design-system/components.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "I3",
+    "routeOrState": "shared state",
+    "implementation": "src/design-system/components.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "I4",
+    "routeOrState": "shared state",
+    "implementation": "src/design-system/components.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "I5",
+    "routeOrState": "shared state",
+    "implementation": "src/design-system/components.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "I6",
+    "routeOrState": "shared state",
+    "implementation": "src/design-system/components.tsx",
+    "coverage": "source implemented; automated render/domain coverage as applicable",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "derived-account-deletion",
+    "routeOrState": "/settings/delete-account",
+    "implementation": "src/features/settings/SettingsScreens.tsx",
+    "coverage": "source implemented; screen render and backend erasure integration tested",
+    "realDeviceVerification": "NOT VERIFIED"
+  },
+  {
+    "promptId": "derived-reset-completion",
+    "routeOrState": "/complete-reset",
+    "implementation": "src/features/auth/AuthScreen.tsx",
+    "coverage": "source implemented; screen render and backend reset integration tested",
+    "realDeviceVerification": "NOT VERIFIED"
+  }
+]

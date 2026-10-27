@@ -1,0 +1,4 @@
+src/app/(app)/home.tsx
+src/app/(app)/finance.tsx
+
+These routes moved into src/app/(app)/(tabs)/. Remove the old files only if overlaying the earlier frontend checkpoint.

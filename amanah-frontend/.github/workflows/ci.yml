@@ -1,0 +1,17 @@
+name: mobile-ci
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "24.22.1" }
+      - run: corepack enable && corepack prepare pnpm@11.25.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck && pnpm lint && pnpm format:check
+      - run: pnpm test && pnpm api:check && pnpm content:verify && pnpm routes:check
+      - run: pnpm exec expo export --platform android --no-bytecode --output-dir /tmp/android-bundle --max-workers 2
+        env: { EXPO_OFFLINE: "1", CI: "1" }
+      - run: pnpm exec expo export --platform ios --no-bytecode --output-dir /tmp/ios-bundle --max-workers 2
+        env: { EXPO_OFFLINE: "1", CI: "1" }

@@ -1,0 +1,10 @@
+$ vitest run --exclude '**/*.integration.test.ts'
+
+ RUN  v5.0.5 /workspace/scratch/365f766dfaba/amanah-backend
+
+
+ Test Files  5 passed (5)
+      Tests  48 passed (48)
+   Start at  00:05:53
+   Duration  648ms (import 46%, tests 32%, transform 20%, worker 2%)
+

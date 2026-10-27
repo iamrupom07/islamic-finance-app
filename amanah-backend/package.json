@@ -1,0 +1,61 @@
+{
+  "private": true,
+  "name": "amanah-api",
+  "dependencies": {
+    "@fastify/cors": "11.3.1",
+    "@fastify/helmet": "13.2.0",
+    "@fastify/swagger": "9.9.2",
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "@upstash/ratelimit": "2.2.0",
+    "@upstash/redis": "1.39.0",
+    "argon2": "0.45.1",
+    "decimal.js": "10.6.0",
+    "dotenv": "18.0.9",
+    "fastify": "5.12.7",
+    "fastify-type-provider-zod": "7.0.0",
+    "jose": "6.2.13",
+    "lossless-json": "4.3.3",
+    "luxon": "3.7.2",
+    "pg": "8.23.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/luxon": "3.7.6",
+    "@types/node": "26.6.5",
+    "@types/pg": "8.23.1",
+    "eslint": "10.13.0",
+    "prettier": "3.9.10",
+    "prisma": "7.10.1",
+    "tsx": "4.23.15",
+    "typescript": "6.0.2",
+    "typescript-eslint": "8.72.0",
+    "vitest": "5.0.5"
+  },
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=24.11 <25"
+  },
+  "scripts": {
+    "dev": "tsx watch --env-file=.env src/main.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/main.js",
+    "job:refresh-rates": "node dist/jobs/refresh-rates.main.js",
+    "prisma:generate": "prisma generate",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "format:check": "prettier --check .",
+    "test": "vitest run --exclude '**/*.integration.test.ts'",
+    "test:integration": "vitest run src/test/api.integration.test.ts",
+    "openapi:generate": "node --import tsx scripts/openapi.ts",
+    "openapi:check": "node --import tsx scripts/openapi.ts --check",
+    "keys:generate": "node --import tsx scripts/keys.ts",
+    "release:check": "node --import tsx scripts/release-check.ts",
+    "maintenance": "node --import tsx scripts/maintenance.ts"
+  }
+}

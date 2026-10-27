@@ -1,0 +1,1 @@
+NONE. The existing initial and invariant migrations are retained; the OAuth nonce table is introduced by an additive third migration.

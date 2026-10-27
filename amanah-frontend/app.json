@@ -1,0 +1,10 @@
+{
+  "plugins": [
+    "expo-font",
+    "expo-secure-store",
+    "expo-sqlite",
+    "expo-sharing",
+    "expo-status-bar",
+    "expo-splash-screen"
+  ]
+}

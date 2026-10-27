@@ -1,0 +1,345 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              String               @id @default(uuid()) @db.Uuid
+  email           String               @unique @db.VarChar(254)
+  passwordHash    String?
+  emailVerifiedAt DateTime?            @db.Timestamptz(3)
+  createdAt       DateTime             @default(now()) @db.Timestamptz(3)
+  identities      AuthIdentity[]
+  sessions        Session[]
+  tokens          OneTimeToken[]
+  preference      UserPreference?
+  transactions    Transaction[]
+  assets          Asset[]
+  debts           Debt[]
+  debtEvents      DebtEvent[]
+  years           ZakatYear[]
+  payments        ZakatPaymentRecord[]
+
+  bookmarks       QuranBookmark[]
+  readingPosition QuranReadingPosition?
+  favorites       DuaFavorite[]
+  idempotency     IdempotencyRecord[]
+}
+
+model AuthIdentity {
+  id       String   @id @default(uuid()) @db.Uuid
+  userId   String   @db.Uuid
+  provider String   @db.VarChar(16)
+  subject  String   @db.VarChar(255)
+  linkedAt DateTime @default(now()) @db.Timestamptz(3)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, subject])
+}
+
+model Session {
+  id          String              @id @default(uuid()) @db.Uuid
+  userId      String              @db.Uuid
+  refreshHash String              @unique @db.VarChar(64)
+  expiresAt   DateTime            @db.Timestamptz(3)
+  revokedAt   DateTime?           @db.Timestamptz(3)
+  createdAt   DateTime            @default(now()) @db.Timestamptz(3)
+  lastUsedAt  DateTime            @default(now()) @db.Timestamptz(3)
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spent       RefreshCredential[]
+
+  @@index([userId, revokedAt])
+}
+
+model RefreshCredential {
+  hash      String   @id @db.VarChar(64)
+  sessionId String   @db.Uuid
+  usedAt    DateTime @default(now()) @db.Timestamptz(3)
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model OneTimeToken {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  kind       String    @db.VarChar(16)
+  hash       String    @unique @db.VarChar(64)
+  expiresAt  DateTime  @db.Timestamptz(3)
+  consumedAt DateTime? @db.Timestamptz(3)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
+}
+
+model UserPreference {
+  userId              String              @id @db.Uuid
+  currency            String              @default("BDT") @db.VarChar(3)
+  locale              String              @default("en") @db.VarChar(2)
+  appearance          String              @default("system") @db.VarChar(8)
+  cityId              String              @default("dhaka") @db.VarChar(32)
+  timezone            String              @default("Asia/Dhaka") @db.VarChar(64)
+  methodId            Int                 @default(1)
+  school              Int                 @default(1)
+  nisabStandard       String              @default("SILVER") @db.VarChar(6)
+  policyVersionId     String?             @db.Uuid
+  hijriAnchor         String?             @db.VarChar(10)
+  continuityConfirmed Boolean             @default(false)
+  reminders           Json                @default("{}")
+  setupStep           Int                 @default(0)
+  setupCompletedAt    DateTime?           @db.Timestamptz(3)
+  version             Int                 @default(1)
+  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  policy              ZakatPolicyVersion? @relation(fields: [policyVersionId], references: [id])
+}
+
+model Transaction {
+  id                String    @id @default(uuid()) @db.Uuid
+  userId            String    @db.Uuid
+  type              String    @db.VarChar(7)
+  category          String    @db.VarChar(64)
+  amount            Decimal   @db.Decimal(20, 4)
+  currency          String    @db.VarChar(3)
+  localDate         DateTime  @db.Date
+  description       String?   @db.VarChar(500)
+  isSadaqah         Boolean   @default(false)
+  reportingCurrency String    @db.VarChar(3)
+  reportingRate     Decimal   @db.Decimal(28, 12)
+  reportingAmount   Decimal   @db.Decimal(20, 4)
+  rateSource        String    @db.VarChar(32)
+  rateAt            DateTime  @db.Timestamptz(3)
+  rateEstimated     Boolean   @default(false)
+  version           Int       @default(1)
+  createdAt         DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime  @updatedAt @db.Timestamptz(3)
+  deletedAt         DateTime? @db.Timestamptz(3)
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, localDate(sort: Desc), id(sort: Desc)])
+  @@index([userId, type, localDate])
+}
+
+model Asset {
+  id            String    @id @default(uuid()) @db.Uuid
+  userId        String    @db.Uuid
+  type          String    @db.VarChar(24)
+  label         String    @db.VarChar(100)
+  currency      String    @db.VarChar(3)
+  valuationMode String    @db.VarChar(10)
+  declaredValue Decimal?  @db.Decimal(20, 4)
+  weightGrams   Decimal?  @db.Decimal(18, 6)
+  purity        Decimal?  @db.Decimal(8, 6)
+  valuedOn      DateTime  @db.Date
+  version       Int       @default(1)
+  createdAt     DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime  @updatedAt @db.Timestamptz(3)
+  deletedAt     DateTime? @db.Timestamptz(3)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc), id(sort: Desc)])
+}
+
+model Debt {
+  id              String      @id @default(uuid()) @db.Uuid
+  userId          String      @db.Uuid
+  direction       String      @db.VarChar(10)
+  label           String      @db.VarChar(100)
+  originalAmount  Decimal     @db.Decimal(20, 4)
+  remainingAmount Decimal     @db.Decimal(20, 4)
+  currency        String      @db.VarChar(3)
+  openedOn        DateTime    @db.Date
+  dueOn           DateTime?   @db.Date
+  recoverability  String      @default("UNCERTAIN") @db.VarChar(12)
+  status          String      @default("OPEN") @db.VarChar(7)
+  settledAt       DateTime?   @db.Timestamptz(3)
+  version         Int         @default(1)
+  createdAt       DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime    @updatedAt @db.Timestamptz(3)
+  deletedAt       DateTime?   @db.Timestamptz(3)
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events          DebtEvent[]
+
+  @@unique([id, userId])
+  @@index([userId, direction, status, dueOn])
+  @@index([userId, createdAt(sort: Desc), id(sort: Desc)])
+}
+
+model DebtEvent {
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @db.Uuid
+  debtId            String   @db.Uuid
+  eventType         String   @db.VarChar(16)
+  previousRemaining Decimal  @db.Decimal(20, 4)
+  nextRemaining     Decimal  @db.Decimal(20, 4)
+  occurredAt        DateTime @default(now()) @db.Timestamptz(3)
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  debt              Debt     @relation(fields: [debtId, userId], references: [id, userId], onDelete: Cascade)
+
+  @@index([userId, debtId])
+}
+
+model ZakatPolicyVersion {
+  id          String           @id @default(uuid()) @db.Uuid
+  version     String           @unique @db.VarChar(32)
+  status      String           @default("DRAFT") @db.VarChar(8)
+  goldGrams   Decimal          @db.Decimal(18, 6)
+  silverGrams Decimal          @db.Decimal(18, 6)
+  annualRate  Decimal          @db.Decimal(10, 8)
+  rules       Json
+  sourceNotes String
+  reviewedBy  String?
+  approvedAt  DateTime?        @db.Timestamptz(3)
+  preferences UserPreference[]
+  years       ZakatYear[]
+}
+
+model ZakatYear {
+  id              String               @id @default(uuid()) @db.Uuid
+  userId          String               @db.Uuid
+  policyVersionId String               @db.Uuid
+  snapshot        Json
+  currency        String               @db.VarChar(3)
+  assessedAmount  Decimal              @db.Decimal(20, 4)
+  periodStart     String?              @db.VarChar(10)
+  periodEnd       String?              @db.VarChar(10)
+  status          String               @default("CLOSED") @db.VarChar(8)
+  createdAt       DateTime             @default(now()) @db.Timestamptz(3)
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  policy          ZakatPolicyVersion   @relation(fields: [policyVersionId], references: [id])
+  payments        ZakatPaymentRecord[]
+
+  @@unique([id, userId])
+  @@unique([userId, periodStart, periodEnd])
+  @@index([userId, createdAt(sort: Desc), id(sort: Desc)])
+}
+
+model ZakatPaymentRecord {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @db.Uuid
+  zakatYearId String    @db.Uuid
+  amount      Decimal   @db.Decimal(20, 4)
+  currency    String    @db.VarChar(3)
+  paidOn      DateTime  @db.Date
+  note        String?   @db.VarChar(500)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  year        ZakatYear @relation(fields: [zakatYearId, userId], references: [id, userId], onDelete: Cascade)
+
+  @@index([userId, zakatYearId])
+}
+
+model RateSet {
+  id        String                 @id @default(uuid()) @db.Uuid
+  provider  String                 @db.VarChar(64)
+  quotedAt  DateTime               @db.Timestamptz(3)
+  fetchedAt DateTime               @default(now()) @db.Timestamptz(3)
+  hash      String                 @unique @db.VarChar(64)
+  metals    MetalPriceSnapshot[]
+  fx        ExchangeRateSnapshot[]
+
+  @@index([quotedAt(sort: Desc)])
+}
+
+model MetalPriceSnapshot {
+  id           String   @id @default(uuid()) @db.Uuid
+  rateSetId    String   @db.Uuid
+  metal        String   @db.VarChar(3)
+  usdPerTroyOz Decimal  @db.Decimal(28, 12)
+  quotedAt     DateTime @db.Timestamptz(3)
+  set          RateSet  @relation(fields: [rateSetId], references: [id], onDelete: Cascade)
+
+  @@unique([rateSetId, metal])
+}
+
+model ExchangeRateSnapshot {
+  id        String  @id @default(uuid()) @db.Uuid
+  rateSetId String  @db.Uuid
+  currency  String  @db.VarChar(3)
+  perUsd    Decimal @db.Decimal(28, 12)
+  set       RateSet @relation(fields: [rateSetId], references: [id], onDelete: Cascade)
+
+  @@unique([rateSetId, currency])
+}
+
+model PrayerScheduleCache {
+  id        String   @id @default(uuid()) @db.Uuid
+  key       String   @unique @db.VarChar(180)
+  schedule  Json
+  fetchedAt DateTime @default(now()) @db.Timestamptz(3)
+  expiresAt DateTime @db.Timestamptz(3)
+}
+
+model QuranBookmark {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  surah     Int
+  ayah      Int
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, surah, ayah])
+}
+
+model QuranReadingPosition {
+  userId    String   @id @db.Uuid
+  surah     Int
+  ayah      Int
+  version   Int      @default(1)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DuaFavorite {
+  userId    String   @db.Uuid
+  duaId     String   @db.VarChar(64)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, duaId])
+}
+
+model IdempotencyRecord {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  operation   String   @db.VarChar(100)
+  key         String   @db.VarChar(80)
+  requestHash String   @db.VarChar(64)
+  response    Json
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  expiresAt   DateTime @db.Timestamptz(3)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, operation, key])
+}
+
+model JobExecution {
+  id         String    @id @default(uuid()) @db.Uuid
+  jobType    String    @db.VarChar(32)
+  period     String    @db.VarChar(32)
+  status     String    @db.VarChar(9)
+  startedAt  DateTime  @default(now()) @db.Timestamptz(3)
+  finishedAt DateTime? @db.Timestamptz(3)
+  errorClass String?   @db.VarChar(64)
+
+  @@unique([jobType, period])
+}
+
+model AuditEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  actorHash  String   @db.VarChar(64)
+  entityType String   @db.VarChar(32)
+  entityId   String   @db.VarChar(64)
+  action     String   @db.VarChar(32)
+  occurredAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([actorHash, occurredAt])
+}
+
+model OAuthChallenge {
+  hash       String    @id @db.VarChar(64)
+  expiresAt  DateTime  @db.Timestamptz(3)
+  consumedAt DateTime? @db.Timestamptz(3)
+
+  @@index([expiresAt])
+}

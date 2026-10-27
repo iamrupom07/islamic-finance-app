@@ -1,0 +1,33 @@
+export const light = {
+  canvas: "#F2F5F7",
+  surface: "#FFFFFF",
+  ink: "#182322",
+  muted: "#586669",
+  border: "#E2E9E6",
+  brand: "#0F6E56",
+  brandFill: "#E1F5EE",
+  brandInk: "#04342C",
+  zakat: "#507C1B",
+  zakatFill: "#EAF3DE",
+  income: "#246CB2",
+  incomeFill: "#E6F1FB",
+  expense: "#BE3534",
+  expenseFill: "#FCEBEB",
+};
+export const dark: typeof light = {
+  canvas: "#101C19",
+  surface: "#1A2925",
+  ink: "#EDF5F1",
+  muted: "#B3C3BC",
+  border: "#354B43",
+  brand: "#86D8BB",
+  brandFill: "#203C32",
+  brandInk: "#E1F5EE",
+  zakat: "#B6D78A",
+  zakatFill: "#2B3824",
+  income: "#8EBEF4",
+  incomeFill: "#22354B",
+  expense: "#FFA5A1",
+  expenseFill: "#452A2B",
+};
+export const space = { gutter: 16, gap: 12, card: 16, dock: 80 };

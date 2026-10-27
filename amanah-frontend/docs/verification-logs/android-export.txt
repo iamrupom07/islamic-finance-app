@@ -1,0 +1,45 @@
+✓ Lockfile passes supply-chain policies (verified 17m ago)
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 0, reused 1, downloaded 0, added 0
+Packages: +4 -32
+++++--------------------------------
+Progress: resolved 0, reused 36, downloaded 0, added 4
+Progress: resolved 0, reused 36, downloaded 0, added 4, done
+
+Done in 2.5s using pnpm v11.25.0
+Using src/app as the root directory for Expo Router.
+Starting Metro Bundler
+
+| (node:38) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:38) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+Android Bundled 48240ms node_modules/expo-router/entry.js (3578 modules)
+
+› Assets (30):
+assets/fonts/Amiri-Regular.ttf (421KB)
+assets/fonts/NotoSansBengali-Regular.ttf (141KB)
+assets/fonts/Outfit-Medium.ttf (55KB)
+assets/fonts/Outfit-Regular.ttf (55KB)
+node_modules/expo-router/assets/arrow_down.png (9.5KB)
+node_modules/expo-router/assets/arrow_right.xml (307B)
+node_modules/expo-router/assets/checkmark.xml (312B)
+node_modules/expo-router/assets/error.png (469B)
+node_modules/expo-router/assets/file.png (138B)
+node_modules/expo-router/assets/forward.png (188B)
+node_modules/expo-router/assets/pkg.png (364B)
+node_modules/expo-router/assets/react-navigation/elements/back-icon-mask.png (653B)
+node_modules/expo-router/assets/react-navigation/elements/back-icon.png (4 variations | 152B)
+node_modules/expo-router/assets/react-navigation/elements/clear-icon.png (4 variations | 425B)
+node_modules/expo-router/assets/react-navigation/elements/close-icon.png (4 variations | 235B)
+node_modules/expo-router/assets/react-navigation/elements/search-icon.png (4 variations | 599B)
+node_modules/expo-router/assets/sitemap.png (465B)
+node_modules/expo-router/assets/unmatched.png (4.8KB)
+
+› android bundles (1):
+_expo/static/js/android/entry-87e1bc1eb22a448fb895c4dbd551aeb4.hbc (6.6MB)
+
+› Files (1):
+metadata.json (2KB)
+
+Exported: /tmp/amanah-final-android-export

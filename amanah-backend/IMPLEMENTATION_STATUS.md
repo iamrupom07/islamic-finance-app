@@ -1,0 +1,7 @@
+# Implementation status
+
+The source implementation now covers the remaining requested product destinations and shared states. The frontend contains 46 route destinations with all 66 source design prompts mapped, native main-tab navigation, authenticated onboarding, finance/holdings/debts, zakat/history/payment records, prayer/reminders, Quran/dua readers with provenance gates, profile/preferences/export/deletion, English/Bangla UI, dark/light themes, protected offline snapshots, error/conflict/empty/loading states and session isolation.
+
+The backend includes modular user-scoped APIs, versioned decimal-safe financial writes, replay-safe refresh sessions, single-use recovery/deletion/Apple nonce tokens, distributed auth rate limits with explicit outage handling, provider adapters, coherent market snapshots, a fenced scheduled job, reviewed-policy-gated zakat, immutable history, bounded devotional state, private exports, active account erasure, migrations, OpenAPI, CI and operation/release tools.
+
+This is a source implementation with measured local checks, not a claim that production resources or signed mobile apps have been released. Approved religious text and policy are external prerequisites: the code deliberately exposes unavailable states until those inputs exist. Full staging, real-device and infrastructure acceptance remain external gates detailed in RELEASE_GATES.md. The mobile build-tool dependency advisories are explicitly retained as unresolved release review items; they are not suppressed or declared fixed.
