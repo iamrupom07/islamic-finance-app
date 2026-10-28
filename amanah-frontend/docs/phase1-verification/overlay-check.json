@@ -1,0 +1,8 @@
+{
+  "overlayReconstruction": "passed",
+  "zipIntegrity": "passed",
+  "changedFilesOnly": "passed",
+  "originalMigrationsUnchanged": 3,
+  "matchingFrontendBackendContract": "passed",
+  "baselineArchiveSha256": "0f257d9724859d8a4820017d14a806a70cfc3a378e818df2bc4af905bff877ac"
+}

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { useTheme } from "../../design-system/ThemeProvider";
 import {
   AmanahLogoBadge,
   Slide1Illustration,
@@ -31,7 +30,6 @@ const slides = [
 export function WelcomeScreen() {
   const [step, setStep] = useState(0);
   const router = useRouter();
-  const { colors } = useTheme();
   const slide = slides[step]!;
 
   const handleNext = () => {
@@ -57,7 +55,10 @@ export function WelcomeScreen() {
   };
 
   return (
-    <SafeAreaView edges={["top", "bottom", "left", "right"]} style={styles.safeArea}>
+    <SafeAreaView
+      edges={["top", "bottom", "left", "right"]}
+      style={styles.safeArea}
+    >
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         bounces={false}
@@ -87,10 +88,7 @@ export function WelcomeScreen() {
 
         {/* Content Area: Title & Subtitle */}
         <View style={styles.textContainer}>
-          <Text
-            accessibilityRole="header"
-            style={styles.headingText}
-          >
+          <Text accessibilityRole="header" style={styles.headingText}>
             {slide.title}
           </Text>
           <Text style={styles.subtitleText}>{slide.body}</Text>
@@ -137,7 +135,7 @@ export function WelcomeScreen() {
                   { opacity: pressed ? 0.8 : 1 },
                 ]}
               >
-                <Text style={styles.backButtonText}>←  Back</Text>
+                <Text style={styles.backButtonText}>← Back</Text>
               </Pressable>
               <Pressable
                 accessibilityRole="button"
@@ -149,7 +147,7 @@ export function WelcomeScreen() {
                   { opacity: pressed ? 0.85 : 1 },
                 ]}
               >
-                <Text style={styles.primaryButtonText}>Next  →</Text>
+                <Text style={styles.primaryButtonText}>Next →</Text>
               </Pressable>
             </View>
           )}
@@ -165,7 +163,7 @@ export function WelcomeScreen() {
                   { opacity: pressed ? 0.85 : 1 },
                 ]}
               >
-                <Text style={styles.primaryButtonText}>Get started  →</Text>
+                <Text style={styles.primaryButtonText}>Get started →</Text>
               </Pressable>
 
               <Pressable
@@ -177,7 +175,9 @@ export function WelcomeScreen() {
                   { opacity: pressed ? 0.6 : 1 },
                 ]}
               >
-                <Text style={styles.loginLinkText}>I already have an account</Text>
+                <Text style={styles.loginLinkText}>
+                  I already have an account
+                </Text>
               </Pressable>
             </View>
           )}

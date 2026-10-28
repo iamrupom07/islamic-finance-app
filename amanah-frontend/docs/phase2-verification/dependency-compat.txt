@@ -1,0 +1,1 @@
+Expo CLI plugin/MCP schema and RSA sign/verify compatibility checks passed. Native exports remain required.

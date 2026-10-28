@@ -28,15 +28,15 @@ export class PrayerProvider {
   ) {
     const requested = DateTime.fromISO(date, { zone: city.timezone });
     const query = new URLSearchParams({
-      city: city.name,
-      country: city.country,
+      latitude: String(city.latitude),
+      longitude: String(city.longitude),
       method: String(methodId),
       school: String(school),
       timezonestring: city.timezone,
     });
     const r = response.parse(
       await this.http.json(
-        `https://api.aladhan.com/v1/timingsByCity/${requested.toFormat("dd-MM-yyyy")}?${query}`,
+        `https://api.aladhan.com/v1/timings/${requested.toFormat("dd-MM-yyyy")}?${query}`,
       ),
     );
     if (
@@ -58,7 +58,16 @@ export class PrayerProvider {
     });
     if (timings.some((t, i) => i > 0 && t.at <= timings[i - 1]!.at))
       throw new Error("PRAYER_ORDER_INVALID");
+    const sunsetRaw = r.data.timings.Sunset;
+    if (!sunsetRaw || !/^([01]\d|2[0-3]):[0-5]\d(?:\s|$)/.test(sunsetRaw))
+      throw Error("PRAYER_SOLAR_EVENT_INVALID");
+    const sunsetAt = DateTime.fromISO(`${date}T${sunsetRaw.slice(0, 5)}`, {
+      zone: city.timezone,
+    }).toISO()!;
+    if (sunsetAt <= timings[3]!.at || sunsetAt > timings[4]!.at)
+      throw Error("PRAYER_SOLAR_ORDER_INVALID");
     return prayerSchedule.parse({
+      solarEvents: { sunriseAt: timings[1]!.at, sunsetAt },
       date,
       cityId: city.id,
       city: city.name,

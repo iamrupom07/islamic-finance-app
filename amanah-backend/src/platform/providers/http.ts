@@ -28,8 +28,24 @@ export class ProviderHttp {
             throw unavailable("The data source is temporarily busy.");
           throw unavailable();
         }
-        const text = await r.text();
-        if (text.length > 2000000) throw unavailable();
+        if (Number(r.headers.get("content-length") ?? 0) > 2000000)
+          throw unavailable();
+        const reader = r.body?.getReader();
+        if (!reader) throw unavailable();
+        const chunks: Uint8Array[] = [];
+        let size = 0;
+        try {
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            size += value.length;
+            if (size > 2000000) throw unavailable();
+            chunks.push(value);
+          }
+        } finally {
+          await reader.cancel().catch(() => {});
+        }
+        const text = Buffer.concat(chunks).toString("utf8");
         const data: unknown = decimalNumbers
           ? parseLossless(text, undefined, (value) => value)
           : JSON.parse(text);

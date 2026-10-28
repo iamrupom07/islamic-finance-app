@@ -129,3 +129,29 @@ describe("deterministic zakat estimates (fictional policy)", () => {
     );
   });
 });
+
+it("retains independent metal, FX, nisab quote and policy inputs in new assessment snapshots", () => {
+  const r = run({
+    assets: [
+      asset({
+        type: "GOLD",
+        valuationMode: "METAL_RATE",
+        declaredValue: null,
+        weightGrams: decimal("10"),
+        purity: decimal("0.75"),
+      }),
+    ],
+  });
+  expect(r.lines[0]).toMatchObject({
+    weightGrams: "10",
+    purity: "0.75",
+    metalUsdPerTroyOz: "3110.34768",
+    fxRateApplied: "100",
+  });
+  expect(r.nisabQuote).toMatchObject({
+    usdPerTroyOz: "31.1034768",
+    fxRateApplied: "100",
+    troyOunceGrams: "31.1034768",
+  });
+  expect(r.policyDetails?.rules).toEqual(policy.rules);
+});

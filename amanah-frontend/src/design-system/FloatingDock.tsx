@@ -1,4 +1,5 @@
 import React from "react";
+import { usePlayerLayout } from "../core/audio/layout";
 import { View, Pressable } from "react-native";
 import { Home, BarChart2, BookOpen, UserRound } from "lucide-react-native";
 import Svg, { Path } from "react-native-svg";
@@ -50,6 +51,7 @@ export function FloatingDock({
 }: BottomTabBarProps) {
   const { colors, dark: isDark, t } = useTheme();
   const insets = useSafeAreaInsets();
+  const { setDockHeight } = usePlayerLayout();
   return (
     <View
       style={{
@@ -62,6 +64,7 @@ export function FloatingDock({
       pointerEvents="box-none"
     >
       <View
+        onLayout={(e) => setDockHeight(e.nativeEvent.layout.height)}
         style={{
           width: "100%",
           maxWidth: 500,
@@ -126,7 +129,11 @@ export function FloatingDock({
                 <Copy
                   size={13}
                   medium
-                  style={{ color: activeColor, flexShrink: 1, fontWeight: "600" }}
+                  style={{
+                    color: activeColor,
+                    flexShrink: 1,
+                    fontWeight: "600",
+                  }}
                 >
                   {item.label}
                 </Copy>

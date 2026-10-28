@@ -1,5 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, Pressable, StyleSheet, useWindowDimensions } from "react-native";
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+} from "react-native";
 import { useRouter } from "expo-router";
 import Svg, { Path } from "react-native-svg";
 import {
@@ -14,6 +20,7 @@ import {
   CircleArrowUp,
   CircleArrowDown,
   Wallet,
+  AlertCircle,
 } from "lucide-react-native";
 import { Screen } from "../../design-system/components";
 import { useTheme } from "../../design-system/ThemeProvider";
@@ -22,8 +29,17 @@ import { api, dataOf } from "../../core/api/client";
 import { useAuth } from "../../core/auth/AuthProvider";
 import { localDate } from "../../core/i18n/formatters";
 import { CoinsPlantIllustration } from "../assets/AssetIcons";
+import { processPrayerSchedule } from "../prayer/prayer-schedule";
+import { ZakatSummaryCard } from "../zakat/ZakatSummaryCard";
+import { metalPreview } from "../finance/value-tools";
 
-function MosqueIcon({ size = 22, color = "#0F6E56" }: { size?: number; color?: string }) {
+function MosqueIcon({
+  size = 22,
+  color = "#0F6E56",
+}: {
+  size?: number;
+  color?: string;
+}) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
       <Path d="M12 2.2a.5.5 0 0 1 .5.5v.6c1.65.48 2.85 1.95 2.85 3.75v1.65h-6.7V7.05c0-1.8 1.2-3.27 2.85-3.75V2.7a.5.5 0 0 1 .5-.5z" />
@@ -36,7 +52,13 @@ function MosqueIcon({ size = 22, color = "#0F6E56" }: { size?: number; color?: s
   );
 }
 
-function DuaHandsIcon({ size = 20, color = "#0F6E56" }: { size?: number; color?: string }) {
+function DuaHandsIcon({
+  size = 20,
+  color = "#0F6E56",
+}: {
+  size?: number;
+  color?: string;
+}) {
   return (
     <Svg
       width={size}
@@ -57,32 +79,26 @@ function DuaHandsIcon({ size = 20, color = "#0F6E56" }: { size?: number; color?:
   );
 }
 
-function SproutWhiteIcon({ size = 22 }: { size?: number }) {
-  return (
-    <Svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#FFFFFF"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <Path d="M7 20h10" />
-      <Path d="M10 20c5.5-2.5.8-6.4 3-10" />
-      <Path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4.1 5.5.8z" />
-      <Path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.4 2-4.6-2.7 0-4.3.7-5.2 2z" />
-    </Svg>
-  );
-}
-
-function formatCurrency(amount: string | number | null | undefined, currency: string = "BDT") {
-  const sym = currency === "BDT" ? "৳" : currency === "USD" ? "$" : currency === "EUR" ? "€" : currency === "GBP" ? "£" : currency;
-  if (amount == null) return `${sym}0`;
+function formatCurrency(
+  amount: string | number | null | undefined,
+  currency: string = "BDT",
+) {
+  const sym =
+    currency === "BDT"
+      ? "৳"
+      : currency === "USD"
+        ? "$"
+        : currency === "EUR"
+          ? "€"
+          : currency === "GBP"
+            ? "£"
+            : currency;
+  if (amount == null) return `${sym}0.00`;
   const num = typeof amount === "string" ? parseFloat(amount) : amount;
-  if (isNaN(num)) return `${sym}0`;
-  return `${sym}${Math.round(num).toLocaleString()}`;
+  if (isNaN(num)) return `${sym}0.00`;
+  const parts = num.toFixed(2).split(".");
+  const integer = parts[0]!.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return `${sym}${integer}.${parts[1]}`;
 }
 
 export function HomeScreen() {
@@ -97,17 +113,44 @@ export function HomeScreen() {
   );
   const assetsQuery = useAccountQuery(
     ["user-assets-home"],
-    async () => dataOf(await api.GET("/v1/assets", { params: { query: { limit: 50 } } })),
+    async () =>
+      dataOf(await api.GET("/v1/assets", { params: { query: { limit: 50 } } })),
     true,
   );
   const d = query.data;
   const { account } = useAuth();
   const [countdown, setCountdown] = useState<string>("01:12:18");
 
+  // Data helpers
+  const currency =
+    d?.monthlyFinance?.currency ?? account?.preferences?.currency ?? "BDT";
+
+  const marketQuery = useAccountQuery(
+    ["market", currency],
+    async () =>
+      dataOf(
+        await api.GET("/v1/market/daily", {
+          params: { query: { currency } },
+        }),
+      ),
+    true,
+  );
+
   const prayer =
-    d?.prayer?.date === localDate(account?.preferences?.timezone ?? "Asia/Dhaka")
+    d?.prayer?.date ===
+    localDate(account?.preferences?.timezone ?? "Asia/Dhaka")
       ? d.prayer
-      : d?.prayer ?? null;
+      : (d?.prayer ?? null);
+
+  const [currentNow, setCurrentNow] = useState(() => new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const processedPrayer = useMemo(() => {
+    return processPrayerSchedule(prayer, currentNow);
+  }, [prayer, currentNow]);
 
   // Live countdown to next prayer
   useEffect(() => {
@@ -116,9 +159,15 @@ export function HomeScreen() {
     const updateCountdown = () => {
       const now = Date.now();
       const diff = Math.max(0, target - now);
-      const h = Math.floor(diff / 3600000).toString().padStart(2, "0");
-      const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, "0");
-      const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, "0");
+      const h = Math.floor(diff / 3600000)
+        .toString()
+        .padStart(2, "0");
+      const m = Math.floor((diff % 3600000) / 60000)
+        .toString()
+        .padStart(2, "0");
+      const s = Math.floor((diff % 60000) / 1000)
+        .toString()
+        .padStart(2, "0");
       setCountdown(`${h}:${m}:${s}`);
     };
     updateCountdown();
@@ -129,91 +178,53 @@ export function HomeScreen() {
   // User display name from email or profile
   const rawEmail = account?.user?.email ?? "";
   const nameFromEmail = rawEmail.includes("@")
-    ? (rawEmail.split("@")[0] ?? "Amina").replace(/[._-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    ? (rawEmail.split("@")[0] ?? "Amina")
+        .replace(/[._-]/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase())
     : "Amina";
   const userName = nameFromEmail || "Amina";
 
-  // Data helpers
-  const currency = d?.monthlyFinance?.currency ?? account?.preferences?.currency ?? "BDT";
   const rawIncome = d?.monthlyFinance?.income;
   const rawExpenses = d?.monthlyFinance?.expenses;
-  const incomeFormatted = rawIncome && parseFloat(rawIncome) > 0 ? formatCurrency(rawIncome, currency) : "৳85,000";
-  const expensesFormatted = rawExpenses && parseFloat(rawExpenses) > 0 ? formatCurrency(rawExpenses, currency) : "৳32,400";
-
-  // Zakat info
-  const hasZakatEstimate = d?.zakat?.estimate && parseFloat(d.zakat.estimate) > 0;
-  const zakatDueFormatted = hasZakatEstimate
-    ? formatCurrency(d.zakat.estimate, d.zakat.currency)
-    : "৳12,450";
-  const netWealthFormatted = d?.zakat?.netEligibleWealth && parseFloat(d.zakat.netEligibleWealth) > 0
-    ? formatCurrency(d.zakat.netEligibleWealth, d.zakat.currency)
-    : "৳498,000";
+  const incomeFormatted = formatCurrency(rawIncome ?? "0", currency);
+  const expensesFormatted = formatCurrency(rawExpenses ?? "0", currency);
 
   // Assets info
   const userAssets = assetsQuery.data?.items ?? [];
-  const calculatedTotalAssets =
+  const goldRate = marketQuery.data?.goldPerGram;
+  const silverRate = marketQuery.data?.silverPerGram;
+
+  const calculatedTotalAssets = userAssets.reduce((sum, item) => {
+    if (item.valuationMode === "METAL_RATE") {
+      const rate = item.type === "GOLD" ? goldRate : silverRate;
+      if (rate && item.weightGrams && item.purity) {
+        const val = metalPreview(item.weightGrams, "g", item.purity, rate);
+        return sum + (val ? parseFloat(val) : 0);
+      }
+      return sum;
+    }
+    return sum + (parseFloat(item.declaredValue ?? "0") || 0);
+  }, 0);
+  const formattedAssetsTotal =
     userAssets.length > 0
-      ? userAssets.reduce(
-          (sum, item) => sum + (parseFloat(item.declaredValue ?? "0") || 0),
-          0,
-        )
-      : 660000;
-  const formattedAssetsTotal = formatCurrency(calculatedTotalAssets, currency);
+      ? formatCurrency(calculatedTotalAssets, currency)
+      : "—";
 
   // Prayer display calculations
-  const nextPrayerName = prayer?.nextPrayer?.name ?? "Maghrib";
-  const prayerCity = prayer?.city ?? "Khulna, Bangladesh";
+  const isForbidden = Boolean(processedPrayer?.activeForbidden);
+  const activeWaqt = processedPrayer?.activeWaqt ?? null;
+  const nextPrayerName =
+    processedPrayer?.nextPrayer?.name ?? prayer?.nextPrayer?.name ?? "Prayer";
+  const displayCountdown =
+    processedPrayer?.nextPrayer?.remainingFormatted ?? countdown;
+  const prayerCity =
+    prayer?.city ?? account?.preferences?.cityId ?? "City not set";
 
-  const standardPrayers = [
-    { name: "Fajr", defaultTime: "4:42" },
-    { name: "Dhuhr", defaultTime: "11:58" },
-    { name: "Asr", defaultTime: "3:32" },
-    { name: "Maghrib", defaultTime: "5:21" },
-    { name: "Isha", defaultTime: "6:39" },
-  ];
-
-  const prayerSchedule = standardPrayers.map((sp) => {
-    const found = prayer?.timings?.find((t) => t.name.toLowerCase() === sp.name.toLowerCase());
-    return {
-      name: sp.name,
-      time: found?.label ? found.label.replace(/^0/, "") : sp.defaultTime,
-      isNext: sp.name.toLowerCase() === nextPrayerName.toLowerCase(),
-    };
-  });
-
-  // Recent transactions
-  const defaultRecentTransactions = [
-    {
-      id: "demo-1",
-      category: "Groceries",
-      subtitle: "Today • Supermarket",
-      amount: "-৳1,250",
-      isIncome: false,
-      Icon: ShoppingCart,
-      color: "#EF4444",
-      bg: "#FEECEC",
-    },
-    {
-      id: "demo-2",
-      category: "Salary",
-      subtitle: "Oct 26 • Monthly salary",
-      amount: "+৳45,000",
-      isIncome: true,
-      Icon: Briefcase,
-      color: "#0284C7",
-      bg: "#EBF5FF",
-    },
-    {
-      id: "demo-3",
-      category: "Sadaqah",
-      subtitle: "Oct 25 • For a family in need",
-      amount: "-৳500",
-      isIncome: false,
-      Icon: Heart,
-      color: "#EF4444",
-      bg: "#E1F5EE",
-    },
-  ];
+  const prayerSchedule = (prayer?.timings ?? []).map((sp) => ({
+    name: sp.name,
+    time: sp.label ? sp.label.replace(/^0/, "") : "",
+    isNext: sp.name.toLowerCase() === nextPrayerName.toLowerCase(),
+  }));
 
   const recentList =
     d?.recentTransactions && d.recentTransactions.length > 0
@@ -233,16 +244,19 @@ export function HomeScreen() {
           }
           return {
             id: tx.id,
-            category: tx.category.charAt(0).toUpperCase() + tx.category.slice(1).toLowerCase().replace(/_/g, " "),
+            category:
+              tx.category.charAt(0).toUpperCase() +
+              tx.category.slice(1).toLowerCase().replace(/_/g, " "),
             subtitle: `${tx.localDate} • ${tx.description ?? (isInc ? "Received" : "Payment")}`,
-            amount: (isInc ? "+" : "-") + formatCurrency(tx.amount, tx.currency),
+            amount:
+              (isInc ? "+" : "-") + formatCurrency(tx.amount, tx.currency),
             isIncome: isInc,
             Icon,
             color,
             bg,
           };
         })
-      : defaultRecentTransactions;
+      : [];
 
   return (
     <Screen
@@ -268,7 +282,7 @@ export function HomeScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Notifications"
-          onPress={() => router.push("/settings/notifications")}
+          onPress={() => router.push("/settings/notification")}
           style={({ pressed }) => [
             styles.bellCircleButton,
             { opacity: pressed ? 0.7 : 1 },
@@ -280,120 +294,365 @@ export function HomeScreen() {
 
       {/* 2. Hero Title */}
       <View style={styles.heroSection}>
-        <Text style={styles.heroTitle}>Track your money{"\n"}and know your zakat</Text>
+        <Text style={styles.heroTitle}>
+          Track your money{"\n"}and know your zakat
+        </Text>
       </View>
 
       {/* 3 & 4. Next Prayer and Zakat Cards */}
-      <View style={isTablet ? { flexDirection: "row", gap: 14, marginBottom: 14 } : undefined}>
+      <View
+        style={
+          isTablet
+            ? { flexDirection: "row", gap: 14, marginBottom: 14 }
+            : undefined
+        }
+      >
         {/* Next Prayer Card with 5-Prayer Timings Bar */}
-        <View style={[styles.prayerCard, isTablet && { flex: 1, marginBottom: 0 }]}>
-        {/* Top summary row */}
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Prayer times"
-          onPress={() => router.push("/prayer")}
-          style={({ pressed }) => [
-            styles.prayerTopRow,
-            { opacity: pressed ? 0.85 : 1 },
+        <View
+          style={[
+            styles.prayerCard,
+            isTablet && { flex: 1, marginBottom: 0 },
+            isForbidden && {
+              backgroundColor: isDark ? "#2C0B0E" : "#FEF2F2",
+              borderColor: isDark ? "#991B1B" : "#FCA5A5",
+              shadowColor: "#EF4444",
+              shadowOpacity: 0.12,
+            },
           ]}
         >
-          <View style={styles.prayerLeft}>
-            <View style={styles.mosqueCircle}>
-              <MosqueIcon size={22} color="#0F6E56" />
-            </View>
-            <View style={styles.prayerInfoCol}>
-              <Text style={styles.prayerNextLabel}>Next prayer</Text>
-              <Text style={styles.prayerCountdown}>
-                {nextPrayerName} in {countdown}
-              </Text>
-              <View style={styles.prayerCityRow}>
-                <MapPin size={12} color="#0F6E56" strokeWidth={2} />
-                <Text style={styles.prayerCityText} numberOfLines={1}>
-                  {prayerCity}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.prayerChevronCircle}>
-            <ChevronRight size={16} color="#64748B" strokeWidth={2} />
-          </View>
-        </Pressable>
-
-        {/* 5-Prayer timings schedule bar */}
-        <View style={styles.timingsRow}>
-          {prayerSchedule.map((p) => (
-            <View key={p.name} style={styles.timingCol}>
-              <Text style={[styles.timingName, p.isNext ? styles.timingActiveColor : null]}>
-                {p.name}
-              </Text>
-              <Text style={[styles.timingTime, p.isNext ? styles.timingActiveColor : null]}>
-                {p.time}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </View>
-
-        {/* 4. Zakat Summary Card */}
-        <View style={[styles.zakatCard, isTablet && { flex: 1, marginBottom: 0 }]}>
-        {/* Top row */}
-        <View style={styles.zakatTopRow}>
-          <View style={styles.sproutBadge}>
-            <SproutWhiteIcon size={24} />
-          </View>
-
-          <View style={styles.zakatAmountCol}>
-            <Text style={styles.zakatLabel}>Zakat summary</Text>
-            {d?.zakat?.status && !hasZakatEstimate ? (
-              <View style={styles.zakatStatusBadge}>
-                <Text style={styles.zakatStatusText}>
-                  {d.zakat.status.replace(/_/g, " ")}
-                </Text>
-              </View>
-            ) : (
-              <View style={styles.zakatDueRow}>
-                <Text style={styles.zakatDueAmount}>{zakatDueFormatted}</Text>
-                <Text style={styles.zakatDueLabel}>due</Text>
-              </View>
-            )}
-          </View>
-
+          {/* Top summary row */}
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="View breakdown"
-            onPress={() => router.push("/zakat")}
+            accessibilityLabel="Prayer times"
+            onPress={() => router.push("/prayer")}
             style={({ pressed }) => [
-              styles.viewBreakdownPill,
-              { opacity: pressed ? 0.75 : 1 },
+              styles.prayerTopRow,
+              { opacity: pressed ? 0.85 : 1 },
             ]}
           >
-            <Text style={styles.viewBreakdownText}>View breakdown</Text>
-            <ChevronRight size={14} color="#182322" strokeWidth={2} />
+            <View style={styles.prayerLeft}>
+              <View
+                style={[
+                  styles.mosqueCircle,
+                  isForbidden && {
+                    backgroundColor: isDark ? "#450A0A" : "#FEE2E2",
+                  },
+                ]}
+              >
+                <MosqueIcon
+                  size={22}
+                  color={isForbidden ? "#DC2626" : "#0F6E56"}
+                />
+              </View>
+              <View style={styles.prayerInfoCol}>
+                <View style={styles.prayerHeaderStatusRow}>
+                  <Text
+                    style={[
+                      styles.prayerNextLabel,
+                      isForbidden && { color: "#DC2626", fontWeight: "700" },
+                    ]}
+                  >
+                    {isForbidden
+                      ? "Prohibited prayer time"
+                      : activeWaqt
+                        ? "Current waqt"
+                        : "Next prayer"}
+                  </Text>
+                  {isForbidden && processedPrayer?.activeForbidden ? (
+                    <View
+                      style={[
+                        styles.activePillSmall,
+                        { backgroundColor: isDark ? "#450A0A" : "#FEE2E2" },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.activePillSmallText,
+                          { color: "#DC2626" },
+                        ]}
+                      >
+                        {`${processedPrayer.activeForbidden.remainingFormatted} left`}
+                      </Text>
+                    </View>
+                  ) : activeWaqt ? (
+                    <View style={styles.activePillSmall}>
+                      <Text style={styles.activePillSmallText}>
+                        {activeWaqt.remainingFormatted} left
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+                <Text
+                  style={[
+                    styles.prayerCountdown,
+                    isForbidden && {
+                      color: isDark ? "#F87171" : "#991B1B",
+                    },
+                  ]}
+                >
+                  {isForbidden && processedPrayer?.activeForbidden
+                    ? `${processedPrayer.activeForbidden.title} ends in ${processedPrayer.activeForbidden.remainingFormatted}`
+                    : activeWaqt
+                      ? `${activeWaqt.name} ends in ${activeWaqt.remainingFormatted}`
+                      : prayer?.nextPrayer
+                        ? `${nextPrayerName} in ${displayCountdown}`
+                        : (d?.prayerUnavailableReason ??
+                          "Schedule unavailable")}
+                </Text>
+                <View style={styles.prayerSubRow}>
+                  <View style={styles.prayerCityRow}>
+                    <MapPin
+                      size={12}
+                      color={isForbidden ? "#DC2626" : "#0F6E56"}
+                      strokeWidth={2}
+                    />
+                    <Text style={styles.prayerCityText} numberOfLines={1}>
+                      {prayerCity}
+                    </Text>
+                  </View>
+                  {isForbidden && processedPrayer?.nextPrayer ? (
+                    <Text
+                      style={[
+                        styles.prayerNextNoticeText,
+                        { color: isDark ? "#F87171" : "#DC2626" },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {`• Next: ${processedPrayer.nextPrayer.name} in ${processedPrayer.nextPrayer.remainingFormatted}`}
+                    </Text>
+                  ) : activeWaqt && processedPrayer?.nextPrayer ? (
+                    <Text style={styles.prayerNextNoticeText} numberOfLines={1}>
+                      {`• Next: ${processedPrayer.nextPrayer.name} in ${processedPrayer.nextPrayer.remainingFormatted}`}
+                    </Text>
+                  ) : null}
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.prayerChevronCircle}>
+              <ChevronRight size={16} color="#64748B" strokeWidth={2} />
+            </View>
           </Pressable>
+
+          {/* Active Forbidden Interval Warning Banner */}
+          {processedPrayer?.activeForbidden ? (
+            <View
+              style={[
+                styles.forbiddenActiveBanner,
+                {
+                  backgroundColor: isDark ? "#3F1418" : "#FEE2E2",
+                  borderColor: isDark ? "#991B1B" : "#F87171",
+                },
+              ]}
+            >
+              <AlertCircle size={16} color="#DC2626" strokeWidth={2.4} />
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={[
+                    styles.forbiddenBannerTitle,
+                    {
+                      color: isDark ? "#FECACA" : "#991B1B",
+                      fontWeight: "700",
+                    },
+                  ]}
+                >
+                  {`Prohibited prayer time: ${processedPrayer.activeForbidden.title}`}
+                </Text>
+                <Text
+                  style={[
+                    styles.forbiddenBannerSub,
+                    { color: isDark ? "#FCA5A5" : "#B91C1C" },
+                  ]}
+                >
+                  {`Ends in ${processedPrayer.activeForbidden.remainingFormatted} (${processedPrayer.activeForbidden.range}) · Voluntary prayers are prohibited`}
+                </Text>
+              </View>
+            </View>
+          ) : null}
+
+          {/* 5-Prayer timings schedule bar with ranges */}
+          {processedPrayer && processedPrayer.waqts.length > 0 ? (
+            <View
+              style={[
+                styles.timingsRow,
+                isForbidden && {
+                  borderTopColor: isDark ? "#7F1D1D" : "#FECACA",
+                },
+              ]}
+            >
+              {processedPrayer.waqts.map((p) => (
+                <View
+                  key={p.name}
+                  style={[
+                    styles.timingCol,
+                    p.isActive && styles.timingColActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.timingName,
+                      p.isActive
+                        ? styles.timingActiveColor
+                        : p.isNext
+                          ? styles.timingNextColor
+                          : null,
+                    ]}
+                  >
+                    {p.name}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.timingTime,
+                      p.isActive ? styles.timingActiveColor : null,
+                    ]}
+                  >
+                    {p.startTime}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.timingRangeEnd,
+                      p.isActive && styles.timingRangeEndActive,
+                    ]}
+                  >
+                    {`to ${p.endTime}`}
+                  </Text>
+                  {p.isActive ? (
+                    <View style={styles.activeBadge}>
+                      <Text style={styles.activeBadgeText}>
+                        {p.remainingFormatted}
+                      </Text>
+                    </View>
+                  ) : p.isNext ? (
+                    <View style={styles.nextBadge}>
+                      <Text style={styles.nextBadgeText}>Next</Text>
+                    </View>
+                  ) : null}
+                </View>
+              ))}
+            </View>
+          ) : prayerSchedule.length > 0 ? (
+            <View
+              style={[
+                styles.timingsRow,
+                isForbidden && {
+                  borderTopColor: isDark ? "#7F1D1D" : "#FECACA",
+                },
+              ]}
+            >
+              {prayerSchedule.map((p) => (
+                <View key={p.name} style={styles.timingCol}>
+                  <Text
+                    style={[
+                      styles.timingName,
+                      p.isNext ? styles.timingActiveColor : null,
+                    ]}
+                  >
+                    {p.name}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.timingTime,
+                      p.isNext ? styles.timingActiveColor : null,
+                    ]}
+                  >
+                    {p.time}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+
+          {/* 3 Forbidden Times in Islam Sub-Card */}
+          {processedPrayer && processedPrayer.forbiddenIntervals.length > 0 ? (
+            <View
+              style={[
+                styles.forbiddenSection,
+                isForbidden && {
+                  borderTopColor: isDark ? "#7F1D1D" : "#FECACA",
+                },
+              ]}
+            >
+              <View style={styles.forbiddenHeaderRow}>
+                <Text
+                  style={[
+                    styles.forbiddenSectionTitle,
+                    isForbidden && {
+                      color: isDark ? "#FECACA" : "#991B1B",
+                      fontWeight: "700",
+                    },
+                  ]}
+                >
+                  3 Forbidden Times in Islam
+                </Text>
+                <Text
+                  style={[
+                    styles.forbiddenSectionBadge,
+                    isForbidden && {
+                      backgroundColor: isDark ? "#450A0A" : "#FEE2E2",
+                      color: "#DC2626",
+                    },
+                  ]}
+                >
+                  Makruh / Prohibited
+                </Text>
+              </View>
+              <View style={styles.forbiddenListRow}>
+                {processedPrayer.forbiddenIntervals.map((f) => (
+                  <View
+                    key={f.name}
+                    style={[
+                      styles.forbiddenItemCol,
+                      f.isActive && [
+                        styles.forbiddenItemColActive,
+                        isForbidden && {
+                          backgroundColor: isDark ? "#450A0A" : "#FEE2E2",
+                          borderColor: "#DC2626",
+                        },
+                      ],
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.forbiddenItemName,
+                        f.isActive && styles.forbiddenItemNameActive,
+                        f.isActive && isForbidden && { color: "#DC2626" },
+                      ]}
+                    >
+                      {f.name}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.forbiddenItemRange,
+                        f.isActive && styles.forbiddenItemRangeActive,
+                        f.isActive && isForbidden && { color: "#991B1B" },
+                      ]}
+                    >
+                      {f.range}
+                    </Text>
+                    {f.isActive ? (
+                      <Text style={styles.forbiddenActiveTag}>
+                        {`Active (${f.remainingFormatted})`}
+                      </Text>
+                    ) : null}
+                  </View>
+                ))}
+              </View>
+              <Text
+                style={[
+                  styles.forbiddenNote,
+                  isForbidden && {
+                    color: isDark ? "#F87171" : "#B91C1C",
+                  },
+                ]}
+              >
+                Voluntary prayers prohibited during sunrise, zenith & sunset
+              </Text>
+            </View>
+          ) : null}
         </View>
 
-        {/* Wealth & Nisab stats row */}
-        <View style={styles.wealthRow}>
-          <Text style={styles.wealthLabel}>
-            Net wealth  <Text style={styles.wealthValue}>{netWealthFormatted}</Text>
-          </Text>
-          <View style={styles.wealthDivider} />
-          <Text style={styles.wealthLabel}>
-            Nisab status: <Text style={styles.nisabStatusValue}>above threshold</Text>
-          </Text>
-        </View>
-
-        {/* Anniversary progress bar */}
-        <View style={styles.progressBarTrack}>
-          <View style={styles.progressBarFill} />
-        </View>
-
-        {/* Anniversary countdown text */}
-        <Text style={styles.anniversaryText}>
-          <Text style={styles.anniversaryDays}>112 days</Text> until zakat anniversary
-        </Text>
-      </View>
+        {/* 4. Zakat Summary Card */}
+        <ZakatSummaryCard zakat={d?.zakat} isTablet={isTablet} />
       </View>
 
       {/* 4.5. Recorded Assets Card Component */}
@@ -438,7 +697,9 @@ export function HomeScreen() {
                   },
                 ]}
               >
-                {userAssets.length > 0 ? `${userAssets.length} holdings recorded` : "5 holdings recorded"}
+                {userAssets.length > 0
+                  ? `${userAssets.length} holdings recorded`
+                  : "No holdings recorded"}
               </Text>
             </View>
           </View>
@@ -487,7 +748,9 @@ export function HomeScreen() {
                 },
               ]}
             >
-              Last updated: 26 Oct 2026, 09:10 AM
+              {userAssets[0]?.valuedOn
+                ? `Last updated: ${userAssets[0].valuedOn}`
+                : "No assets recorded"}
             </Text>
           </View>
 
@@ -495,60 +758,45 @@ export function HomeScreen() {
         </View>
 
         {/* Asset category chip breakdown */}
-        <View style={styles.assetChipsRow}>
-          <View style={[styles.assetChip, { backgroundColor: isDark ? "#172E24" : "#EBF5F0" }]}>
-            <Text
-              style={[
-                styles.assetChipLabel,
-                {
-                  color: "#0F6E56",
-                  fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium",
-                },
-              ]}
-            >
-              Cash ৳120k
-            </Text>
+        {userAssets.length > 0 ? (
+          <View style={styles.assetChipsRow}>
+            {userAssets.slice(0, 4).map((a) => (
+              <View
+                key={a.id}
+                style={[
+                  styles.assetChip,
+                  { backgroundColor: isDark ? "#172E24" : "#EBF5F0" },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.assetChipLabel,
+                    {
+                      color: "#0F6E56",
+                      fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium",
+                    },
+                  ]}
+                >
+                  {a.label || a.type}{" "}
+                  {formatCurrency(
+                    a.valuationMode === "METAL_RATE" &&
+                      (a.type === "GOLD" ? goldRate : silverRate) &&
+                      a.weightGrams &&
+                      a.purity
+                      ? metalPreview(
+                          a.weightGrams,
+                          "g",
+                          a.purity,
+                          (a.type === "GOLD" ? goldRate : silverRate) ?? null,
+                        )
+                      : a.declaredValue,
+                    currency,
+                  )}
+                </Text>
+              </View>
+            ))}
           </View>
-          <View style={[styles.assetChip, { backgroundColor: isDark ? "#1E2A4A" : "#EBF5FF" }]}>
-            <Text
-              style={[
-                styles.assetChipLabel,
-                {
-                  color: "#2563EB",
-                  fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium",
-                },
-              ]}
-            >
-              Savings ৳180k
-            </Text>
-          </View>
-          <View style={[styles.assetChip, { backgroundColor: isDark ? "#2D2619" : "#FEF3C7" }]}>
-            <Text
-              style={[
-                styles.assetChipLabel,
-                {
-                  color: "#D97706",
-                  fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium",
-                },
-              ]}
-            >
-              Gold ৳240k
-            </Text>
-          </View>
-          <View style={[styles.assetChip, { backgroundColor: isDark ? "#281E38" : "#F3E8FF" }]}>
-            <Text
-              style={[
-                styles.assetChipLabel,
-                {
-                  color: "#7C3AED",
-                  fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium",
-                },
-              ]}
-            >
-              Invest ৳80k
-            </Text>
-          </View>
-        </View>
+        ) : null}
 
         {/* Quick Add Asset shortcut */}
         <Pressable
@@ -564,7 +812,12 @@ export function HomeScreen() {
             },
           ]}
         >
-          <Plus size={16} color="#0F6E56" strokeWidth={2.2} style={{ marginRight: 6 }} />
+          <Plus
+            size={16}
+            color="#0F6E56"
+            strokeWidth={2.2}
+            style={{ marginRight: 6 }}
+          />
           <Text
             style={[
               styles.assetAddPillText,
@@ -589,7 +842,9 @@ export function HomeScreen() {
           ]}
         >
           <View style={styles.metricHeaderRow}>
-            <View style={[styles.metricIconCircle, { backgroundColor: "#EBF5FF" }]}>
+            <View
+              style={[styles.metricIconCircle, { backgroundColor: "#EBF5FF" }]}
+            >
               <CircleArrowUp size={22} color="#2563EB" strokeWidth={1.9} />
             </View>
             <View style={styles.metricLabelCol}>
@@ -611,7 +866,9 @@ export function HomeScreen() {
           ]}
         >
           <View style={styles.metricHeaderRow}>
-            <View style={[styles.metricIconCircle, { backgroundColor: "#FEECEC" }]}>
+            <View
+              style={[styles.metricIconCircle, { backgroundColor: "#FEECEC" }]}
+            >
               <CircleArrowDown size={22} color="#EF4444" strokeWidth={1.9} />
             </View>
             <View style={styles.metricLabelCol}>
@@ -668,30 +925,40 @@ export function HomeScreen() {
         </View>
 
         <View style={styles.transactionsCard}>
-          {recentList.map((tx, idx) => (
-            <Pressable
-              key={tx.id || idx}
-              accessibilityRole="button"
-              onPress={() => router.push(`/transactions/${tx.id}` as any)}
-              style={[
-                styles.txItemRow,
-                idx < recentList.length - 1 ? styles.txDivider : null,
-              ]}
-            >
-              <View style={styles.txLeft}>
-                <View style={[styles.txIconCircle, { backgroundColor: tx.bg }]}>
-                  <tx.Icon size={18} color={tx.color} strokeWidth={1.8} />
-                </View>
-                <View style={styles.txTextCol}>
-                  <Text style={styles.txCategoryName}>{tx.category}</Text>
-                  <Text style={styles.txSub}>{tx.subtitle}</Text>
-                </View>
-              </View>
-              <Text style={[styles.txAmountText, { color: tx.color }]}>
-                {tx.amount}
+          {recentList.length === 0 ? (
+            <View style={{ paddingVertical: 16, alignItems: "center" }}>
+              <Text style={{ color: "#64748B", fontSize: 14 }}>
+                No recent transactions.
               </Text>
-            </Pressable>
-          ))}
+            </View>
+          ) : (
+            recentList.map((tx, idx) => (
+              <Pressable
+                key={tx.id || idx}
+                accessibilityRole="button"
+                onPress={() => router.push(`/transactions/${tx.id}` as any)}
+                style={[
+                  styles.txItemRow,
+                  idx < recentList.length - 1 ? styles.txDivider : null,
+                ]}
+              >
+                <View style={styles.txLeft}>
+                  <View
+                    style={[styles.txIconCircle, { backgroundColor: tx.bg }]}
+                  >
+                    <tx.Icon size={18} color={tx.color} strokeWidth={1.8} />
+                  </View>
+                  <View style={styles.txTextCol}>
+                    <Text style={styles.txCategoryName}>{tx.category}</Text>
+                    <Text style={styles.txSub}>{tx.subtitle}</Text>
+                  </View>
+                </View>
+                <Text style={[styles.txAmountText, { color: tx.color }]}>
+                  {tx.amount}
+                </Text>
+              </Pressable>
+            ))
+          )}
         </View>
       </View>
 
@@ -835,6 +1102,22 @@ const styles = StyleSheet.create({
     gap: 2,
     flex: 1,
   },
+  prayerHeaderStatusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  activePillSmall: {
+    backgroundColor: "#DCFCE7",
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
+  },
+  activePillSmallText: {
+    fontFamily: "OutfitMedium",
+    fontSize: 11,
+    color: "#15803D",
+  },
   prayerNextLabel: {
     fontFamily: "Outfit",
     fontSize: 12,
@@ -845,16 +1128,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#111827",
   },
-  prayerCityRow: {
+  prayerSubRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
     marginTop: 1,
+    flexWrap: "wrap",
+  },
+  prayerCityRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   prayerCityText: {
     fontFamily: "Outfit",
     fontSize: 12.5,
     color: "#5B6F68",
+  },
+  prayerNextNoticeText: {
+    fontFamily: "Outfit",
+    fontSize: 12,
+    color: "#0F6E56",
   },
   prayerChevronCircle: {
     width: 32,
@@ -864,6 +1158,28 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  forbiddenActiveBanner: {
+    backgroundColor: "#FEF3C7",
+    borderColor: "#F59E0B",
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 10,
+    marginTop: 12,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+  },
+  forbiddenBannerTitle: {
+    fontFamily: "OutfitMedium",
+    fontSize: 13,
+    color: "#92400E",
+  },
+  forbiddenBannerSub: {
+    fontFamily: "Outfit",
+    fontSize: 11.5,
+    color: "#B45309",
+    marginTop: 1,
+  },
   timingsRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -871,25 +1187,144 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: "#DCEFE6",
+    gap: 4,
   },
   timingCol: {
     flex: 1,
     alignItems: "center",
-    gap: 4,
+    gap: 2,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  timingColActive: {
+    backgroundColor: "#D6F2E4",
   },
   timingName: {
     fontFamily: "Outfit",
-    fontSize: 12,
+    fontSize: 11.5,
     color: "#64748B",
   },
   timingTime: {
     fontFamily: "OutfitMedium",
-    fontSize: 14,
+    fontSize: 13,
     color: "#182322",
+  },
+  timingRangeEnd: {
+    fontFamily: "Outfit",
+    fontSize: 10.5,
+    color: "#94A3B8",
+  },
+  timingRangeEndActive: {
+    color: "#0F6E56",
+    fontWeight: "600",
   },
   timingActiveColor: {
     color: "#0F6E56",
     fontWeight: "600",
+  },
+  timingNextColor: {
+    color: "#0284C7",
+    fontWeight: "600",
+  },
+  activeBadge: {
+    backgroundColor: "#0F6E56",
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 4,
+    marginTop: 2,
+  },
+  activeBadgeText: {
+    fontFamily: "OutfitMedium",
+    fontSize: 9,
+    color: "#FFFFFF",
+  },
+  nextBadge: {
+    backgroundColor: "#E0F2FE",
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 4,
+    marginTop: 2,
+  },
+  nextBadgeText: {
+    fontFamily: "OutfitMedium",
+    fontSize: 9,
+    color: "#0284C7",
+  },
+  forbiddenSection: {
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#DCEFE6",
+  },
+  forbiddenHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  forbiddenSectionTitle: {
+    fontFamily: "OutfitMedium",
+    fontSize: 12,
+    color: "#2D3748",
+  },
+  forbiddenSectionBadge: {
+    fontFamily: "Outfit",
+    fontSize: 10,
+    color: "#92400E",
+    backgroundColor: "#FEF3C7",
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 4,
+  },
+  forbiddenListRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 4,
+  },
+  forbiddenItemCol: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 8,
+    padding: 6,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+  forbiddenItemColActive: {
+    backgroundColor: "#FEF3C7",
+    borderColor: "#F59E0B",
+  },
+  forbiddenItemName: {
+    fontFamily: "OutfitMedium",
+    fontSize: 11,
+    color: "#475569",
+  },
+  forbiddenItemNameActive: {
+    color: "#92400E",
+    fontWeight: "700",
+  },
+  forbiddenItemRange: {
+    fontFamily: "Outfit",
+    fontSize: 10,
+    color: "#64748B",
+    marginTop: 1,
+  },
+  forbiddenItemRangeActive: {
+    color: "#92400E",
+    fontWeight: "600",
+  },
+  forbiddenActiveTag: {
+    fontFamily: "OutfitMedium",
+    fontSize: 9,
+    color: "#DC2626",
+    marginTop: 2,
+  },
+  forbiddenNote: {
+    fontFamily: "Outfit",
+    fontSize: 10.5,
+    color: "#718096",
+    marginTop: 6,
+    textAlign: "center",
   },
   zakatCard: {
     backgroundColor: "#EEF8F1",

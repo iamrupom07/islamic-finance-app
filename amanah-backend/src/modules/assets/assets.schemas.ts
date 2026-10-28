@@ -16,8 +16,15 @@ export const assetInput = z
       "BUSINESS_INVENTORY",
     ]),
     label: z.string().trim().min(1).max(100),
+    note: z.string().trim().max(500).nullable().optional(),
     currency,
     valuationMode: z.enum(["MANUAL", "METAL_RATE"]),
+    weightQuantity: z
+      .string()
+      .regex(/^\d{1,10}(?:\.\d{1,12})?$/)
+      .nullable()
+      .optional(),
+    weightUnit: z.enum(["g", "bhori", "tola", "ozt"]).nullable().optional(),
     declaredValue: positiveMoney.nullable().optional(),
     weightGrams: z
       .string()

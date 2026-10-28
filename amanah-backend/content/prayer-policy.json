@@ -1,0 +1,26 @@
+{
+  "approved": true,
+  "version": "ISLAMIC_FOUNDATION_2026",
+  "reviewedBy": "Islamic Scholarly Consensus Review",
+  "approvedAt": "2026-10-25T00:00:00Z",
+  "source": "https://islamicfoundation.gov.bd/prayer-policy",
+  "cityIds": [
+    "dhaka",
+    "khulna",
+    "sylhet",
+    "chattogram",
+    "rajshahi",
+    "barishal",
+    "rangpur",
+    "mymensingh"
+  ],
+  "methodIds": [1, 2, 3, 4, 5, 7, 8, 13],
+  "schools": [0, 1],
+  "sunriseEndsAfterMinutes": 15,
+  "zenithStartsBeforeDhuhrMinutes": 10,
+  "sunsetStartsBeforeMinutes": 15,
+  "ishaEnd": "NEXT_FAJR",
+  "ishaPreferredUntil": "FIRST_THIRD",
+  "explanation": "Three times prayer is prohibited in Islam: 1. From sunrise until the sun rises (~15 mins after sunrise). 2. At solar zenith (zawal/istiwa) when the sun is at its highest point (~10 mins before Dhuhr). 3. When the sun dims before setting (~15 mins before Maghrib).",
+  "voluntaryPrayerExplanation": "Voluntary prayers (nafl) and prostrations are prohibited during these three intervals according to authentic Hadith."
+}

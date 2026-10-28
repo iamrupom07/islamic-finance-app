@@ -1,0 +1,4 @@
+SDK and runtime validators match OpenAPI db97ab5e91bd2d46c182b7564010fa9ce1f209b2ac0772c68b876d6aafb4bcf6
+46 unique route destinations; all required destinations and source screen mappings resolve.
+Static navigation calls resolve.
+Content unavailable by design: no unapproved text will be rendered.

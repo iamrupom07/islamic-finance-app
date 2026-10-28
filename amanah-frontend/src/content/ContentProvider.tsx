@@ -1,72 +1,53 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { z } from "zod";
 import * as Crypto from "expo-crypto";
+import { useQuery } from "@tanstack/react-query";
 import raw from "./bundle.json";
-const schema = z.object({
-  approved: z.literal(true),
-  source: z.url(),
-  edition: z.string().min(1),
-  license: z.string().min(1),
-  reviewedBy: z.string().min(1),
-  sha256: z.string().regex(/^[a-f0-9]{64}$/),
-  payload: z.object({
-    surahs: z.array(
-      z.object({
-        number: z.number().int(),
-        name: z.string(),
-        arabicName: z.string(),
-        verses: z.array(
-          z.object({
-            number: z.number().int(),
-            arabic: z.string().min(1),
-            translation: z.string().optional(),
-          }),
-        ),
-      }),
-    ),
-    duas: z.array(
-      z.object({
-        id: z.string(),
-        category: z.string(),
-        title: z.string(),
-        arabic: z.string().min(1),
-        translation: z.string(),
-        transliteration: z.string().optional(),
-        reference: z.string(),
-      }),
-    ),
-  }),
-});
-export type ContentBundle = z.infer<typeof schema>;
+import lock from "./edition-lock.json";
+import {
+  contentSchema,
+  validateStructure,
+  type ContentBundle,
+} from "./contract";
+import { api, dataOf } from "../core/api/client";
+export type { ContentBundle } from "./contract";
 const Content = createContext<{
   bundle: ContentBundle | null;
   loading: boolean;
-}>({ bundle: null, loading: true });
+  compatible: boolean;
+  error: string | null;
+}>({ bundle: null, loading: true, compatible: false, error: null });
 export function ContentProvider({ children }: { children: React.ReactNode }) {
-  const [bundle, setBundle] = useState<ContentBundle | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [bundle, setBundle] = useState<ContentBundle | null>(null),
+    [loading, setLoading] = useState(true),
+    [error, setError] = useState<string | null>(null);
+  const catalog = useQuery({
+    queryKey: ["content-edition"],
+    queryFn: async () => dataOf(await api.GET("/v1/catalog")),
+    retry: 1,
+  });
   useEffect(() => {
     let alive = true;
     void (async () => {
       try {
-        const b = schema.parse(raw);
-        if (
-          b.payload.surahs.length !== 114 ||
-          b.payload.surahs.some(
-            (s, i) =>
-              s.number !== i + 1 ||
-              !s.verses.length ||
-              s.verses.some((v, j) => v.number !== j + 1),
-          )
-        )
-          return;
         const hash = await Crypto.digestStringAsync(
           Crypto.CryptoDigestAlgorithm.SHA256,
-          JSON.stringify(b.payload),
+          JSON.stringify(raw.payload),
         );
-        if (hash === b.sha256 && alive) setBundle(b);
-      } catch {
-        /* Unapproved text is never rendered. */
+        if (hash !== raw.sha256 || hash !== lock.sha256)
+          throw Error("CONTENT_HASH_MISMATCH");
+        const parsed = contentSchema.parse(raw);
+        validateStructure(parsed, lock);
+        for (let i = 0; i < raw.payload.surahs.length; i++)
+          if (
+            (await Crypto.digestStringAsync(
+              Crypto.CryptoDigestAlgorithm.SHA256,
+              JSON.stringify(raw.payload.surahs[i]),
+            )) !== lock.surahHashes[i]
+          )
+            throw Error("CONTENT_SURAH_HASH_MISMATCH");
+        if (alive) setBundle(parsed);
+      } catch (e) {
+        if (alive) setError(e instanceof Error ? e.message : "CONTENT_INVALID");
       } finally {
         if (alive) setLoading(false);
       }
@@ -75,8 +56,25 @@ export function ContentProvider({ children }: { children: React.ReactNode }) {
       alive = false;
     };
   }, []);
+  const compatible =
+    !!bundle &&
+    catalog.data?.content.sha256 === bundle.sha256 &&
+    catalog.data.content.edition === bundle.edition;
   return (
-    <Content.Provider value={{ bundle, loading }}>{children}</Content.Provider>
+    <Content.Provider
+      value={{
+        bundle,
+        loading,
+        compatible,
+        error:
+          error ??
+          (catalog.data && !compatible
+            ? "The server and app editions differ. Update the app before saving reading progress."
+            : null),
+      }}
+    >
+      {children}
+    </Content.Provider>
   );
 }
 export const useContent = () => useContext(Content);

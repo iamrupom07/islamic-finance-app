@@ -7,28 +7,24 @@ const timestamp = String(now.getTime() / 1000);
 it("validates decimal-safe source data and explicitly maps both metals", async () => {
   const http = new ProviderHttp(1000, async (url) => {
     const u = String(url);
-    const result = u.includes("exchangerate")
+    const result = u.includes("open.er-api.com")
       ? {
           result: "success",
           base_code: "USD",
           time_last_update_unix: timestamp,
-          conversion_rates: Object.fromEntries(
+          rates: Object.fromEntries(
             currencies.map((c) => [c, c === "USD" ? "1" : "100"]),
           ),
         }
       : {
-          metal: u.includes("XAU") ? "XAU" : "XAG",
+          symbol: u.includes("XAU") ? "XAU" : "XAG",
           currency: "USD",
           price: "31.1034768",
-          timestamp,
+          updatedAt: now.toISOString(),
         };
     return new Response(JSON.stringify(result));
   });
-  const result = await new RatesProvider(
-    http,
-    "fake-test-key",
-    "fake-test-key",
-  ).fetch(now);
+  const result = await new RatesProvider(http).fetch(now);
   expect(result.metals.map((m) => m.metal)).toEqual(["XAU", "XAG"]);
   expect(result.fx).toHaveLength(currencies.length);
 });
@@ -38,23 +34,21 @@ it("rejects a malformed or future market quote", async () => {
     async (url) =>
       new Response(
         JSON.stringify(
-          String(url).includes("exchangerate")
+          String(url).includes("open.er-api.com")
             ? {
                 result: "success",
                 base_code: "USD",
                 time_last_update_unix: timestamp,
-                conversion_rates: { USD: "1" },
+                rates: { USD: "1" },
               }
             : {
-                metal: String(url).includes("XAU") ? "XAU" : "XAG",
+                symbol: String(url).includes("XAU") ? "XAU" : "XAG",
                 currency: "USD",
                 price: "-1",
-                timestamp,
+                updatedAt: now.toISOString(),
               },
         ),
       ),
   );
-  await expect(
-    new RatesProvider(http, "fake", "fake").fetch(now),
-  ).rejects.toThrow();
+  await expect(new RatesProvider(http).fetch(now)).rejects.toThrow();
 });

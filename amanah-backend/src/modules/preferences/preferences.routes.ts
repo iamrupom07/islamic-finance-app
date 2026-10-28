@@ -48,6 +48,7 @@ export function preferencesRoutes(route: Register, ctx: Context) {
     content: z.object({
       available: z.boolean(),
       sha256: z.string().nullable(),
+      edition: z.string().nullable(),
     }),
     social: z.object({ google: z.boolean(), apple: z.boolean() }),
   });

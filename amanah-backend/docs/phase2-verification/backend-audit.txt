@@ -1,0 +1,1 @@
+Fresh dependency audit passed; exact lockfile and resolution configuration recorded.

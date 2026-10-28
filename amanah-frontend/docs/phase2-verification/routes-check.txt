@@ -1,0 +1,2 @@
+48 unique route destinations; all required destinations and source screen mappings resolve.
+Static navigation calls resolve.

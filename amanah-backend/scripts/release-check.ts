@@ -1,4 +1,11 @@
 import "dotenv/config";
+import { execFileSync } from "node:child_process";
+execFileSync(process.execPath, ["scripts/audit-dependencies.mjs"], {
+  stdio: "inherit",
+});
+execFileSync(process.execPath, ["scripts/release-evidence.mjs"], {
+  stdio: "inherit",
+});
 import { loadEnv } from "../src/config/env.js";
 import { createDatabase } from "../src/platform/database/client.js";
 import { loadContent } from "../src/modules/catalog/catalog.service.js";

@@ -20,6 +20,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     slug: "amanah",
     version: "0.1.0",
     scheme: "amanah",
+    platforms: ["ios", "android", "web"],
     orientation: "default",
     userInterfaceStyle: "automatic",
     ios: {
@@ -35,6 +36,20 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     android: { package: androidId, permissions: ["POST_NOTIFICATIONS"] },
     plugins: [
       "expo-router",
+      "expo-system-ui",
+      [
+        "expo-audio",
+        {
+          microphonePermission: false,
+          recordAudioAndroid: false,
+          enableBackgroundPlayback: true,
+          enableBackgroundRecording: false,
+        },
+      ],
+      [
+        "expo-local-authentication",
+        { faceIDPermission: "Use Face ID to unlock Amanah on this device." },
+      ],
       "expo-secure-store",
       "expo-font",
       ["expo-sqlite", { useSQLCipher: true }],
@@ -43,6 +58,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       [
         "expo-location",
         {
+          locationAlwaysAndWhenInUsePermission: false,
+          locationAlwaysPermission: false,
           locationWhenInUsePermission:
             "Use your approximate location to suggest a prayer city.",
         },

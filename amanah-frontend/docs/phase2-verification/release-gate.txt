@@ -1,0 +1,12 @@
+file:///workspace/scratch/365f766dfaba/amanah-phase2/amanah-frontend/scripts/release-evidence.mjs:53
+    throw Error(
+          ^
+
+Error: BLOCKED: current named-owner release evidence has not been supplied. Complete docs/release-evidence.template.json after signed-device, staging, rights, and recovery verification.
+    at verifyReleaseEvidence (file:///workspace/scratch/365f766dfaba/amanah-phase2/amanah-frontend/scripts/release-evidence.mjs:53:11)
+    at file:///workspace/scratch/365f766dfaba/amanah-phase2/amanah-frontend/scripts/release-evidence.mjs:116:9
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.22.1

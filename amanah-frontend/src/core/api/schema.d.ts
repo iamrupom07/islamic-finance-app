@@ -3192,6 +3192,7 @@ export interface paths {
                                 content: {
                                     available: boolean;
                                     sha256: string | null;
+                                    edition: string | null;
                                 };
                                 social: {
                                     google: boolean;
@@ -4516,10 +4517,14 @@ export interface paths {
                                     /** @enum {string} */
                                     type: "CASH" | "SAVINGS" | "GOLD" | "SILVER" | "INVESTMENT" | "BUSINESS_INVENTORY";
                                     label: string;
+                                    note?: string | null;
                                     /** @enum {string} */
                                     currency: "BDT" | "USD" | "EUR" | "GBP" | "SAR" | "AED" | "INR" | "MYR" | "CAD" | "AUD";
                                     /** @enum {string} */
                                     valuationMode: "MANUAL" | "METAL_RATE";
+                                    weightQuantity?: string | null;
+                                    /** @enum {string|null} */
+                                    weightUnit?: "g" | "bhori" | "tola" | "ozt" | null;
                                     declaredValue: string | null;
                                     weightGrams: string | null;
                                     purity: string | null;
@@ -4717,10 +4722,14 @@ export interface paths {
                         /** @enum {string} */
                         type: "CASH" | "SAVINGS" | "GOLD" | "SILVER" | "INVESTMENT" | "BUSINESS_INVENTORY";
                         label: string;
+                        note?: string | null;
                         /** @enum {string} */
                         currency: "BDT" | "USD" | "EUR" | "GBP" | "SAR" | "AED" | "INR" | "MYR" | "CAD" | "AUD";
                         /** @enum {string} */
                         valuationMode: "MANUAL" | "METAL_RATE";
+                        weightQuantity?: string | null;
+                        /** @enum {string|null} */
+                        weightUnit?: "g" | "bhori" | "tola" | "ozt" | null;
                         declaredValue?: string | null;
                         weightGrams?: string | null;
                         purity?: string | null;
@@ -4740,10 +4749,14 @@ export interface paths {
                                 /** @enum {string} */
                                 type: "CASH" | "SAVINGS" | "GOLD" | "SILVER" | "INVESTMENT" | "BUSINESS_INVENTORY";
                                 label: string;
+                                note?: string | null;
                                 /** @enum {string} */
                                 currency: "BDT" | "USD" | "EUR" | "GBP" | "SAR" | "AED" | "INR" | "MYR" | "CAD" | "AUD";
                                 /** @enum {string} */
                                 valuationMode: "MANUAL" | "METAL_RATE";
+                                weightQuantity?: string | null;
+                                /** @enum {string|null} */
+                                weightUnit?: "g" | "bhori" | "tola" | "ozt" | null;
                                 declaredValue: string | null;
                                 weightGrams: string | null;
                                 purity: string | null;
@@ -4957,10 +4970,14 @@ export interface paths {
                                 /** @enum {string} */
                                 type: "CASH" | "SAVINGS" | "GOLD" | "SILVER" | "INVESTMENT" | "BUSINESS_INVENTORY";
                                 label: string;
+                                note?: string | null;
                                 /** @enum {string} */
                                 currency: "BDT" | "USD" | "EUR" | "GBP" | "SAR" | "AED" | "INR" | "MYR" | "CAD" | "AUD";
                                 /** @enum {string} */
                                 valuationMode: "MANUAL" | "METAL_RATE";
+                                weightQuantity?: string | null;
+                                /** @enum {string|null} */
+                                weightUnit?: "g" | "bhori" | "tola" | "ozt" | null;
                                 declaredValue: string | null;
                                 weightGrams: string | null;
                                 purity: string | null;
@@ -5358,10 +5375,14 @@ export interface paths {
                         /** @enum {string} */
                         type?: "CASH" | "SAVINGS" | "GOLD" | "SILVER" | "INVESTMENT" | "BUSINESS_INVENTORY";
                         label?: string;
+                        note?: string | null;
                         /** @enum {string} */
                         currency?: "BDT" | "USD" | "EUR" | "GBP" | "SAR" | "AED" | "INR" | "MYR" | "CAD" | "AUD";
                         /** @enum {string} */
                         valuationMode?: "MANUAL" | "METAL_RATE";
+                        weightQuantity?: string | null;
+                        /** @enum {string|null} */
+                        weightUnit?: "g" | "bhori" | "tola" | "ozt" | null;
                         declaredValue?: string | null;
                         weightGrams?: string | null;
                         purity?: string | null;
@@ -5382,10 +5403,14 @@ export interface paths {
                                 /** @enum {string} */
                                 type: "CASH" | "SAVINGS" | "GOLD" | "SILVER" | "INVESTMENT" | "BUSINESS_INVENTORY";
                                 label: string;
+                                note?: string | null;
                                 /** @enum {string} */
                                 currency: "BDT" | "USD" | "EUR" | "GBP" | "SAR" | "AED" | "INR" | "MYR" | "CAD" | "AUD";
                                 /** @enum {string} */
                                 valuationMode: "MANUAL" | "METAL_RATE";
+                                weightQuantity?: string | null;
+                                /** @enum {string|null} */
+                                weightUnit?: "g" | "bhori" | "tola" | "ozt" | null;
                                 declaredValue: string | null;
                                 weightGrams: string | null;
                                 purity: string | null;
@@ -5566,6 +5591,243 @@ export interface paths {
         };
         trace?: never;
     };
+    "/v1/debts/{id}/repayments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    "idempotency-key": string;
+                };
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        version: number;
+                        amount: string;
+                        paidOn: string;
+                        note?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                /** @enum {string} */
+                                direction: "I_OWE" | "OWED_TO_ME";
+                                label: string;
+                                note?: string | null;
+                                originalAmount: string;
+                                remainingAmount: string;
+                                /** @enum {string} */
+                                currency: "BDT" | "USD" | "EUR" | "GBP" | "SAR" | "AED" | "INR" | "MYR" | "CAD" | "AUD";
+                                openedOn: string;
+                                dueOn: string | null;
+                                /**
+                                 * @default UNCERTAIN
+                                 * @enum {string}
+                                 */
+                                recoverability: "RECOVERABLE" | "UNCERTAIN" | "DISPUTED";
+                                /** Format: uuid */
+                                id: string;
+                                /** @enum {string} */
+                                status: "OPEN" | "SETTLED";
+                                settledAt: string | null;
+                                version: number;
+                                createdAt: string;
+                                updatedAt: string;
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/debts": {
         parameters: {
             query?: never;
@@ -5598,6 +5860,7 @@ export interface paths {
                                     /** @enum {string} */
                                     direction: "I_OWE" | "OWED_TO_ME";
                                     label: string;
+                                    note?: string | null;
                                     originalAmount: string;
                                     remainingAmount: string;
                                     /** @enum {string} */
@@ -5805,6 +6068,7 @@ export interface paths {
                         /** @enum {string} */
                         direction: "I_OWE" | "OWED_TO_ME";
                         label: string;
+                        note?: string | null;
                         originalAmount: string;
                         remainingAmount: string;
                         /** @enum {string} */
@@ -5831,6 +6095,7 @@ export interface paths {
                                 /** @enum {string} */
                                 direction: "I_OWE" | "OWED_TO_ME";
                                 label: string;
+                                note?: string | null;
                                 originalAmount: string;
                                 remainingAmount: string;
                                 /** @enum {string} */
@@ -6054,6 +6319,7 @@ export interface paths {
                                 /** @enum {string} */
                                 direction: "I_OWE" | "OWED_TO_ME";
                                 label: string;
+                                note?: string | null;
                                 originalAmount: string;
                                 remainingAmount: string;
                                 /** @enum {string} */
@@ -6461,6 +6727,7 @@ export interface paths {
                         /** @enum {string} */
                         direction?: "I_OWE" | "OWED_TO_ME";
                         label?: string;
+                        note?: string | null;
                         originalAmount?: string;
                         remainingAmount?: string;
                         /** @enum {string} */
@@ -6485,6 +6752,7 @@ export interface paths {
                                 /** @enum {string} */
                                 direction: "I_OWE" | "OWED_TO_ME";
                                 label: string;
+                                note?: string | null;
                                 originalAmount: string;
                                 remainingAmount: string;
                                 /** @enum {string} */
@@ -6718,6 +6986,7 @@ export interface paths {
                                 /** @enum {string} */
                                 direction: "I_OWE" | "OWED_TO_ME";
                                 label: string;
+                                note?: string | null;
                                 originalAmount: string;
                                 remainingAmount: string;
                                 /** @enum {string} */
@@ -6938,6 +7207,8 @@ export interface paths {
                                 eventType: string;
                                 previousRemaining: string;
                                 nextRemaining: string;
+                                paidOn: string | null;
+                                note: string | null;
                                 occurredAt: string;
                             }[];
                             meta: {
@@ -7140,6 +7411,27 @@ export interface paths {
                     content: {
                         "application/json": {
                             data: {
+                                policyDetails?: {
+                                    sourceNotes: string | null;
+                                    reviewedBy: string;
+                                    approvedAt: string;
+                                    goldGrams: string;
+                                    silverGrams: string;
+                                    rules: {
+                                        assetTypes: ("CASH" | "SAVINGS" | "GOLD" | "SILVER" | "INVESTMENT" | "BUSINESS_INVENTORY")[];
+                                        /** @enum {string} */
+                                        debtRule: "NONE" | "DUE_WITHIN_PERIOD";
+                                        /** @enum {string} */
+                                        receivableRule: "NONE" | "RECOVERABLE";
+                                        /** @enum {string} */
+                                        yearRule: "CONTINUITY_ATTESTED_ISLAMIC_CIVIL";
+                                    };
+                                };
+                                nisabQuote?: {
+                                    usdPerTroyOz: string;
+                                    fxRateApplied: string;
+                                    troyOunceGrams: string;
+                                };
                                 /** @enum {string} */
                                 status: "NO_ASSETS" | "BELOW_NISAB" | "ESTIMATE_ONLY" | "YEAR_IN_PROGRESS" | "POTENTIALLY_DUE" | "DATA_STALE" | "CALCULATION_UNAVAILABLE";
                                 /** @enum {string} */
@@ -7168,6 +7460,10 @@ export interface paths {
                                     method: string;
                                 } | null;
                                 lines: {
+                                    weightGrams?: string | null;
+                                    purity?: string | null;
+                                    metalUsdPerTroyOz?: string | null;
+                                    fxRateApplied?: string | null;
                                     id: string;
                                     label: string;
                                     /** @enum {string} */
@@ -7182,6 +7478,9 @@ export interface paths {
                                 }[];
                                 reasons: string[];
                                 disclaimer: string;
+                                valuationDate?: string;
+                                /** @enum {string} */
+                                valuationBasis?: "CURRENT_DECLARED_HOLDINGS";
                                 fingerprint: string;
                             };
                             meta: {
@@ -7411,6 +7710,14 @@ export interface paths {
                                 paidOn: string;
                                 createdAt: string;
                                 note: string | null;
+                                effectiveAmount: string;
+                                corrections: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    replacementAmount: string;
+                                    reason: string;
+                                    createdAt: string;
+                                }[];
                             };
                             meta: {
                                 requestId: string;
@@ -7618,6 +7925,8 @@ export interface paths {
                                     currency: string;
                                     assessedAmount: string;
                                     recordedAmount: string;
+                                    /** @enum {string} */
+                                    paymentState: "UNPAID" | "PARTIAL" | "RECORDED" | "OVER_RECORDED";
                                     remainingAmount: string;
                                     /** @enum {string} */
                                     recordStatus: "PAID_PARTIAL" | "PAID_RECORDED" | "OVER_RECORDED";
@@ -7834,6 +8143,8 @@ export interface paths {
                                 currency: string;
                                 assessedAmount: string;
                                 recordedAmount: string;
+                                /** @enum {string} */
+                                paymentState: "UNPAID" | "PARTIAL" | "RECORDED" | "OVER_RECORDED";
                                 remainingAmount: string;
                                 /** @enum {string} */
                                 recordStatus: "PAID_PARTIAL" | "PAID_RECORDED" | "OVER_RECORDED";
@@ -7841,6 +8152,27 @@ export interface paths {
                                 periodStart: string | null;
                                 periodEnd: string | null;
                                 snapshot: {
+                                    policyDetails?: {
+                                        sourceNotes: string | null;
+                                        reviewedBy: string;
+                                        approvedAt: string;
+                                        goldGrams: string;
+                                        silverGrams: string;
+                                        rules: {
+                                            assetTypes: ("CASH" | "SAVINGS" | "GOLD" | "SILVER" | "INVESTMENT" | "BUSINESS_INVENTORY")[];
+                                            /** @enum {string} */
+                                            debtRule: "NONE" | "DUE_WITHIN_PERIOD";
+                                            /** @enum {string} */
+                                            receivableRule: "NONE" | "RECOVERABLE";
+                                            /** @enum {string} */
+                                            yearRule: "CONTINUITY_ATTESTED_ISLAMIC_CIVIL";
+                                        };
+                                    };
+                                    nisabQuote?: {
+                                        usdPerTroyOz: string;
+                                        fxRateApplied: string;
+                                        troyOunceGrams: string;
+                                    };
                                     /** @enum {string} */
                                     status: "NO_ASSETS" | "BELOW_NISAB" | "ESTIMATE_ONLY" | "YEAR_IN_PROGRESS" | "POTENTIALLY_DUE" | "DATA_STALE" | "CALCULATION_UNAVAILABLE";
                                     /** @enum {string} */
@@ -7869,6 +8201,10 @@ export interface paths {
                                         method: string;
                                     } | null;
                                     lines: {
+                                        weightGrams?: string | null;
+                                        purity?: string | null;
+                                        metalUsdPerTroyOz?: string | null;
+                                        fxRateApplied?: string | null;
                                         id: string;
                                         label: string;
                                         /** @enum {string} */
@@ -7883,6 +8219,9 @@ export interface paths {
                                     }[];
                                     reasons: string[];
                                     disclaimer: string;
+                                    valuationDate?: string;
+                                    /** @enum {string} */
+                                    valuationBasis?: "CURRENT_DECLARED_HOLDINGS";
                                     fingerprint: string;
                                 };
                                 payments: {
@@ -7893,12 +8232,436 @@ export interface paths {
                                     paidOn: string;
                                     createdAt: string;
                                     note: string | null;
+                                    effectiveAmount: string;
+                                    corrections: {
+                                        /** Format: uuid */
+                                        id: string;
+                                        replacementAmount: string;
+                                        reason: string;
+                                        createdAt: string;
+                                    }[];
                                 }[];
                             };
                             meta: {
                                 requestId: string;
                             };
                         };
+                    };
+                };
+                /** @description Default Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/zakat/payments/{id}/corrections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    "idempotency-key": string;
+                };
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        replacementAmount: string;
+                        reason: string;
+                        /** Format: uuid */
+                        lastCorrectionId: string | null;
+                        /** @default false */
+                        confirmOverpayment?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                /** @enum {boolean} */
+                                ok: true;
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/zakat/history/{id}/statement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Private readable HTML statement of the immutable assessment and effective payment correction history. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/html": string;
                     };
                 };
                 /** @description Default Response */
@@ -8121,7 +8884,55 @@ export interface paths {
                                     at: string;
                                     label: string;
                                 } | null;
+                                /** @default null */
+                                solarEvents: {
+                                    sunriseAt: string;
+                                    sunsetAt: string;
+                                } | null;
                                 disclaimer: string;
+                                /** @default [] */
+                                windows: {
+                                    name: string;
+                                    start: string;
+                                    end: string;
+                                    preferredUntil: string | null;
+                                    lateFrom: string | null;
+                                    jamaatAt: string | null;
+                                }[];
+                                /** @default null */
+                                previousNightIsha: {
+                                    name: string;
+                                    start: string;
+                                    end: string;
+                                    preferredUntil: string | null;
+                                    lateFrom: string | null;
+                                    jamaatAt: string | null;
+                                } | null;
+                                /** @default [] */
+                                forbiddenIntervals: {
+                                    name: string;
+                                    start: string;
+                                    end: string;
+                                    explanation: string;
+                                }[];
+                                /** @default Reviewed prayer interval policy is not installed. */
+                                guidanceUnavailableReason: string | null;
+                                /** @default null */
+                                policy: {
+                                    version: string;
+                                    source: string;
+                                    reviewedBy: string;
+                                    approvedAt: string;
+                                    explanation: string;
+                                    voluntaryPrayerExplanation: string;
+                                } | null;
+                                /** @default null */
+                                nextDayFajr: {
+                                    /** @enum {string} */
+                                    name: "Fajr" | "Sunrise" | "Dhuhr" | "Asr" | "Maghrib" | "Isha";
+                                    at: string;
+                                    label: string;
+                                } | null;
                             };
                             meta: {
                                 requestId: string;
@@ -8326,6 +9137,7 @@ export interface paths {
                                 surah: number;
                                 ayah: number;
                                 version: number;
+                                edition: string | null;
                                 updatedAt: string;
                             } | null;
                             meta: {
@@ -8509,6 +9321,7 @@ export interface paths {
                         surah: number;
                         ayah: number;
                         version: number;
+                        edition?: string;
                     };
                 };
             };
@@ -8524,6 +9337,7 @@ export interface paths {
                                 surah: number;
                                 ayah: number;
                                 version: number;
+                                edition: string | null;
                                 updatedAt: string;
                             };
                             meta: {
@@ -9923,7 +10737,8 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": string;
+                        "application/json": unknown;
+                        "text/csv": string;
                     };
                 };
                 /** @description Default Response */
@@ -10307,6 +11122,698 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/market/daily": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    currency?: "BDT" | "USD" | "EUR" | "GBP" | "SAR" | "AED" | "INR" | "MYR" | "CAD" | "AUD";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                currency: string;
+                                /** @enum {string} */
+                                status: "AVAILABLE" | "STALE" | "UNAVAILABLE";
+                                goldPerGram: string | null;
+                                silverPerGram: string | null;
+                                goldNisab: string | null;
+                                silverNisab: string | null;
+                                goldGrams: string | null;
+                                silverGrams: string | null;
+                                policyVersion: string | null;
+                                rateSetId: string | null;
+                                sourceAt: string | null;
+                                fetchedAt: string | null;
+                                goldAt: string | null;
+                                silverAt: string | null;
+                                /** @enum {string} */
+                                basis: "PURE_METAL_SPOT_REFERENCE";
+                                selectedStandard: string;
+                                reasons: string[];
+                                credits: {
+                                    name: string;
+                                    url: string;
+                                    purpose: string;
+                                }[];
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/holdings/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                currency: string;
+                                /** @enum {string} */
+                                status: "AVAILABLE" | "PARTIAL" | "UNAVAILABLE";
+                                assetCount: number;
+                                debtCount: number;
+                                assetsTotal: string | null;
+                                iOweTotal: string | null;
+                                owedToMeTotal: string | null;
+                                knownAssetsSubtotal: string;
+                                rateSetId: string | null;
+                                asOf: string;
+                                lines: {
+                                    id: string;
+                                    /** @enum {string} */
+                                    kind: "ASSET" | "I_OWE" | "OWED_TO_ME";
+                                    label: string;
+                                    type: string;
+                                    value: string | null;
+                                    sourceAt: string | null;
+                                    reason: string | null;
+                                }[];
+                                reasons: string[];
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/finance/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    month?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: {
+                                report: {
+                                    month: string;
+                                    /** @enum {string} */
+                                    currency: "BDT" | "USD" | "EUR" | "GBP" | "SAR" | "AED" | "INR" | "MYR" | "CAD" | "AUD";
+                                    /** @enum {string} */
+                                    status: "AVAILABLE" | "CONVERSION_UNAVAILABLE";
+                                    income: string | null;
+                                    expenses: string | null;
+                                    sadaqah: string | null;
+                                    categories: {
+                                        category: string;
+                                        amount: string;
+                                    }[];
+                                    hasActivity: boolean;
+                                    displayConversionEstimated: boolean;
+                                    sourceAt: string | null;
+                                    reasons: string[];
+                                };
+                                trend: {
+                                    month: string;
+                                    /** @enum {string} */
+                                    currency: "BDT" | "USD" | "EUR" | "GBP" | "SAR" | "AED" | "INR" | "MYR" | "CAD" | "AUD";
+                                    /** @enum {string} */
+                                    status: "AVAILABLE" | "CONVERSION_UNAVAILABLE";
+                                    income: string | null;
+                                    expenses: string | null;
+                                    sadaqah: string | null;
+                                    categories: {
+                                        category: string;
+                                        amount: string;
+                                    }[];
+                                    hasActivity: boolean;
+                                    displayConversionEstimated: boolean;
+                                    sourceAt: string | null;
+                                    reasons: string[];
+                                }[];
+                                lifetimeSadaqah: string | null;
+                                /** @enum {string} */
+                                lifetimeStatus: "AVAILABLE" | "CONVERSION_UNAVAILABLE";
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                code: string;
+                                message: string;
+                                fields?: {
+                                    [key: string]: string;
+                                };
+                            };
+                            meta: {
+                                requestId: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/finance/report": {
         parameters: {
             query?: never;
@@ -10569,6 +12076,27 @@ export interface paths {
                                     reasons: string[];
                                 };
                                 zakat: {
+                                    policyDetails?: {
+                                        sourceNotes: string | null;
+                                        reviewedBy: string;
+                                        approvedAt: string;
+                                        goldGrams: string;
+                                        silverGrams: string;
+                                        rules: {
+                                            assetTypes: ("CASH" | "SAVINGS" | "GOLD" | "SILVER" | "INVESTMENT" | "BUSINESS_INVENTORY")[];
+                                            /** @enum {string} */
+                                            debtRule: "NONE" | "DUE_WITHIN_PERIOD";
+                                            /** @enum {string} */
+                                            receivableRule: "NONE" | "RECOVERABLE";
+                                            /** @enum {string} */
+                                            yearRule: "CONTINUITY_ATTESTED_ISLAMIC_CIVIL";
+                                        };
+                                    };
+                                    nisabQuote?: {
+                                        usdPerTroyOz: string;
+                                        fxRateApplied: string;
+                                        troyOunceGrams: string;
+                                    };
                                     /** @enum {string} */
                                     status: "NO_ASSETS" | "BELOW_NISAB" | "ESTIMATE_ONLY" | "YEAR_IN_PROGRESS" | "POTENTIALLY_DUE" | "DATA_STALE" | "CALCULATION_UNAVAILABLE";
                                     /** @enum {string} */
@@ -10597,6 +12125,10 @@ export interface paths {
                                         method: string;
                                     } | null;
                                     lines: {
+                                        weightGrams?: string | null;
+                                        purity?: string | null;
+                                        metalUsdPerTroyOz?: string | null;
+                                        fxRateApplied?: string | null;
                                         id: string;
                                         label: string;
                                         /** @enum {string} */
@@ -10611,6 +12143,9 @@ export interface paths {
                                     }[];
                                     reasons: string[];
                                     disclaimer: string;
+                                    valuationDate?: string;
+                                    /** @enum {string} */
+                                    valuationBasis?: "CURRENT_DECLARED_HOLDINGS";
                                     fingerprint: string;
                                 };
                                 prayer: {
@@ -10638,7 +12173,55 @@ export interface paths {
                                         at: string;
                                         label: string;
                                     } | null;
+                                    /** @default null */
+                                    solarEvents: {
+                                        sunriseAt: string;
+                                        sunsetAt: string;
+                                    } | null;
                                     disclaimer: string;
+                                    /** @default [] */
+                                    windows: {
+                                        name: string;
+                                        start: string;
+                                        end: string;
+                                        preferredUntil: string | null;
+                                        lateFrom: string | null;
+                                        jamaatAt: string | null;
+                                    }[];
+                                    /** @default null */
+                                    previousNightIsha: {
+                                        name: string;
+                                        start: string;
+                                        end: string;
+                                        preferredUntil: string | null;
+                                        lateFrom: string | null;
+                                        jamaatAt: string | null;
+                                    } | null;
+                                    /** @default [] */
+                                    forbiddenIntervals: {
+                                        name: string;
+                                        start: string;
+                                        end: string;
+                                        explanation: string;
+                                    }[];
+                                    /** @default Reviewed prayer interval policy is not installed. */
+                                    guidanceUnavailableReason: string | null;
+                                    /** @default null */
+                                    policy: {
+                                        version: string;
+                                        source: string;
+                                        reviewedBy: string;
+                                        approvedAt: string;
+                                        explanation: string;
+                                        voluntaryPrayerExplanation: string;
+                                    } | null;
+                                    /** @default null */
+                                    nextDayFajr: {
+                                        /** @enum {string} */
+                                        name: "Fajr" | "Sunrise" | "Dhuhr" | "Asr" | "Maghrib" | "Isha";
+                                        at: string;
+                                        label: string;
+                                    } | null;
                                 } | null;
                                 prayerUnavailableReason: string | null;
                                 recentTransactions: {

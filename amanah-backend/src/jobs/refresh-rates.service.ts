@@ -7,7 +7,7 @@ export async function refreshRates(
   provider: RatesProvider,
   now = new Date(),
 ) {
-  const period = now.toISOString().slice(0, 13);
+  const period = now.toISOString().slice(0, 10);
   const lockKey = "rates:" + period;
   const acquired = await db.$transaction(async (tx) => {
     await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${lockKey},0))::text`;
@@ -53,6 +53,9 @@ export async function refreshRates(
       });
       if (!lease) throw new Error("JOB_LEASE_LOST");
       const prior = await tx.rateSet.findFirst({
+        where: {
+          provider: { notIn: ["manual_seed", "fixture", "development_seed"] },
+        },
         orderBy: { quotedAt: "desc" },
         include: { metals: true, fx: true },
       });

@@ -5,7 +5,10 @@ import { AppError } from "../http/errors.js";
 export type DbReader = Prisma.TransactionClient;
 export async function latestRates(db: DbReader) {
   return db.rateSet.findFirst({
-    orderBy: { quotedAt: "desc" },
+    where: {
+      provider: { notIn: ["manual_seed", "fixture", "development_seed"] },
+    },
+    orderBy: [{ quotedAt: "desc" }, { id: "desc" }],
     include: { metals: true, fx: true },
   });
 }
@@ -13,6 +16,7 @@ export type RateData = Awaited<ReturnType<typeof latestRates>>;
 export function freshRate(set: RateData, now: Date, maxHours: number) {
   return (
     !!set &&
+    !["manual_seed", "fixture", "development_seed"].includes(set.provider) &&
     set.quotedAt <= now &&
     now.getTime() - set.quotedAt.getTime() <= maxHours * 3600000
   );

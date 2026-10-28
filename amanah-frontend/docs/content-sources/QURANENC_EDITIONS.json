@@ -1,0 +1,25 @@
+{
+  "english_rwwad": {
+    "key": "english_rwwad",
+    "direction": "ltr",
+    "language_iso_code": "en",
+    "version": "1.0.20",
+    "last_update": 1792534351,
+    "title": "English Translation - Rowwad Translation Center",
+    "description": "Translated by the team of the Rowwad Translation Center, in cooperation with the Rabwah Dawah Association, the Islamic Content Service Association in Languages, and the IslamHouse.com website.",
+    "file": "english_rwwad",
+    "database_url": "https://quranenc.com/downloads/sqlite/english_rwwad.zip",
+    "database_uncompressed_url": "https://quranenc.com/downloads/sqlite/english_rwwad.sqlite",
+    "pdf_url": "https://quranenc.com/downloads/pdf/english_rwwad.pdf",
+    "pdf_size": 15845331,
+    "pdf_cover": "https://quranenc.com/downloads/pdf_covers/english_rwwad.png",
+    "pdf_pure_url": "https://quranenc.com/downloads/pdf/english_rwwad.pure.pdf",
+    "pdf_pure_size": 25521873,
+    "pdf_pure_cover": "https://quranenc.com/downloads/pdf_covers/english_rwwad.pure.png",
+    "pdf_mobile_url": "https://quranenc.com/downloads/pdf/english_rwwad.mobile.pdf",
+    "pdf_mobile_size": 19042987,
+    "pdf_mobile_cover": "https://quranenc.com/downloads/pdf_covers/english_rwwad.mobile.png",
+    "epub_url": "https://quranenc.com/downloads/epub/english_rwwad.epub",
+    "epub_size": 1462628
+  }
+}

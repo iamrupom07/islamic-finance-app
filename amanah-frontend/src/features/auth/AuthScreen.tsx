@@ -50,10 +50,7 @@ export function AuthScreen({
       ? base.pick({ email: true })
       : mode === "reset"
         ? base.pick({ password: true }).extend({
-            password: z
-              .string()
-              .min(8, "Use at least 8 characters.")
-              .max(128),
+            password: z.string().min(8, "Use at least 8 characters.").max(128),
           })
         : mode === "register"
           ? base.extend({
@@ -180,7 +177,10 @@ export function AuthScreen({
     process.env.EXPO_PUBLIC_PRIVACY_URL || "https://amanah.app/privacy";
 
   return (
-    <SafeAreaView edges={["top", "bottom", "left", "right"]} style={styles.safeArea}>
+    <SafeAreaView
+      edges={["top", "bottom", "left", "right"]}
+      style={styles.safeArea}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.keyboardContainer}
@@ -231,7 +231,7 @@ export function AuthScreen({
                 onPress={() => router.replace("/login")}
                 style={styles.messageButton}
               >
-                <Text style={styles.messageButtonText}>Sign in  →</Text>
+                <Text style={styles.messageButtonText}>Sign in →</Text>
               </Pressable>
             </View>
           ) : null}
@@ -261,7 +261,7 @@ export function AuthScreen({
                 {busy ? (
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
-                  <Text style={styles.primaryButtonText}>Verify email  →</Text>
+                  <Text style={styles.primaryButtonText}>Verify email →</Text>
                 )}
               </Pressable>
             </View>
@@ -350,13 +350,26 @@ export function AuthScreen({
                               showPassword ? "Hide password" : "Show password"
                             }
                             onPress={() => setShowPassword((v) => !v)}
-                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                            hitSlop={{
+                              top: 10,
+                              bottom: 10,
+                              left: 10,
+                              right: 10,
+                            }}
                             style={styles.eyeButton}
                           >
                             {showPassword ? (
-                              <EyeOff size={19} color="#64748B" strokeWidth={1.8} />
+                              <EyeOff
+                                size={19}
+                                color="#64748B"
+                                strokeWidth={1.8}
+                              />
                             ) : (
-                              <Eye size={19} color="#64748B" strokeWidth={1.8} />
+                              <Eye
+                                size={19}
+                                color="#64748B"
+                                strokeWidth={1.8}
+                              />
                             )}
                           </Pressable>
                         </View>
@@ -471,7 +484,9 @@ export function AuthScreen({
                       mode === "register" ? "Sign in" : "Create account"
                     }
                     onPress={() =>
-                      router.replace(mode === "register" ? "/login" : "/register")
+                      router.replace(
+                        mode === "register" ? "/login" : "/register",
+                      )
                     }
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >

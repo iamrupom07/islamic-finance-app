@@ -1,4 +1,2 @@
-src/app/(app)/home.tsx
-src/app/(app)/finance.tsx
-
-These routes moved into src/app/(app)/(tabs)/. Remove the old files only if overlaying the earlier frontend checkpoint.
+This is a complete merged source package. No overlay or deletion step is required.
+Phase 1 deletions are already reflected in this tree. Historical patch manifests are in docs/delivery-history/.

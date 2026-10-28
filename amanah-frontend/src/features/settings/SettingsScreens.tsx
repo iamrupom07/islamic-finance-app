@@ -80,6 +80,7 @@ export function ProfileScreen() {
           { label: "Notifications", route: "notification", value: undefined },
           { label: "Appearance", route: "appearance", value: p.appearance },
           { label: "Language", route: "language", value: p.locale },
+          { label: "Privacy & security", route: "privacy", value: undefined },
           { label: "Export data", route: "export", value: undefined },
           { label: "About Amanah", route: "about", value: undefined },
         ].map((row) => (
@@ -292,6 +293,12 @@ export function NisabSettingsScreen() {
     queryKey: ["catalog"],
     queryFn: async () => dataOf(await api.GET("/v1/catalog")),
   });
+  useEffect(() => {
+    const firstPolicy = q.data?.policies?.[0];
+    if (!policy && firstPolicy) {
+      setPolicy(firstPolicy.id);
+    }
+  }, [q.data?.policies, policy]);
   return (
     <Screen title="Nisab standard" back>
       <Card>

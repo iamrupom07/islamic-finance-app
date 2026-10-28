@@ -1,15 +1,13 @@
-# Amanah native mobile app
+# Amanah mobile — merged Phase 1 + Phase 2
 
-Expo 58 / React Native 0.88 / React 19.3 / TypeScript. This is the full mobile source repository, including all required destinations and the 66-prompt mapping, not an installable APK/IPA.
+This is the complete merged source, including the original project and both phases. No earlier ZIP is required. Extract both archives into the same new parent directory, then follow RUN_INSTRUCTIONS.txt. Configure your own environment values; deploy the matching backend and migrations before the mobile app. Historical phase reports are retained for traceability.
 
-## Start
+Installed: complete publisher-sourced Quran Arabic and English, all OpenDua source entries, reading controls/progress/bookmarks/search/Juz navigation, shared native Quran audio and permitted downloads, device privacy, themed/Bangla controls, readable assessment sharing and exact-graph release tooling. See IMPLEMENTATION_STATUS.md for feature boundaries. No Dua recording or unsupported Bengali religious translation is substituted.
 
-1. Install Node 24 LTS (24.11+ on the 24 line) and pnpm 11.25.0 through Corepack.
-2. Run `pnpm install --frozen-lockfile`.
-3. Copy `.env.example` to `.env` and set `EXPO_PUBLIC_API_BASE_URL` to your reachable API ending in `/v1`. For a physical phone, localhost means that phone; use a reachable development host or staging HTTPS URL.
-4. Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm api:check`, `pnpm routes:check`, and `pnpm content:verify`.
-5. Use `pnpm start` with a native development client. Run `pnpm android` or `pnpm ios` with the required native toolchains, or build using EAS. SQLCipher and native sign-in require native builds, not Expo Go.
+Read PHASE2_RUN_COMMANDS.txt, VERIFICATION.md, RELEASE_GATES.md, docs/CONTENT_PROVENANCE.md and docs/PHASE2_OPERATIONS.md. The native build must be regenerated for audio/biometric/system-UI/SQLCipher changes. Expo Go, a JS export or a generated native project is not signed-device evidence. Android/iOS are the declared release platforms; web is not verified.
 
-See `docs/RELEASE.md`, `docs/SCREEN_COVERAGE.json`, `VERIFICATION.md` and `RELEASE_GATES.md`. Fonts and licenses are bundled. No official logo, sacred text, live financial data, provider credentials or store signing assets are fabricated. Import approved Quran/dua content with `node scripts/import-content.mjs /absolute/path/approved.json` and install the same edition on the backend.
+The app bundles text so reading does not require a live content request. Saved reading progress/bookmarks/favorites require the same server edition. “Mark read here” explicitly records the exact verse and timestamp; it does not claim passive scroll tracking. Full-surah audio resumes by recording and seconds on the device and is not ayah synchronized.
 
-This archive supersedes the earlier checkpoint. Extract into a clean directory. If overlaying the checkpoint, follow `FILES_DELETED.txt` to remove the two old tab route files.
+Downloads are opt-in, one transfer at a time, require encrypted native metadata, have conservative 256 MiB total/64 MiB recording limits, support pause/retry/discard/deletion and verify local checksums. Files/settings/player metadata are purged on sign-out/account erasure. Audio licensing metadata is distinct from a corruption checksum. Explicit exports and editable amounts remain visible while hide-balances is enabled; external shared copies are outside app control.
+
+Production promotion is intentionally blocked until actual signed artifacts, device/staging/beta/legal/content/religious evidence and named owners are supplied. No production signing, deployment or independent approval has been fabricated.

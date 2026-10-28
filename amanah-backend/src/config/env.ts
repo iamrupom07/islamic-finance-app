@@ -44,6 +44,7 @@ const api = common
     GOOGLE_ALLOWED_CLIENT_IDS: z.string().default(""),
     APPLE_ALLOWED_CLIENT_IDS: z.string().default(""),
     CONTENT_BUNDLE_PATH: z.string().optional(),
+    PRAYER_POLICY_PATH: z.string().optional(),
     LOG_LEVEL: z
       .enum(["silent", "error", "warn", "info", "debug"])
       .default("info"),
@@ -88,10 +89,4 @@ const defined = (input: NodeJS.ProcessEnv) =>
 export const loadEnv = (input: NodeJS.ProcessEnv = process.env): Env =>
   api.parse(defined(input));
 export const loadJobEnv = (input: NodeJS.ProcessEnv = process.env) =>
-  common
-    .extend({
-      GOLD_API_KEY: z.string().min(1),
-      EXCHANGE_RATE_API_KEY: z.string().min(1),
-      GOLD_QUOTE_UNIT: z.literal("USD_PER_TROY_OUNCE"),
-    })
-    .parse(defined(input));
+  common.parse(defined(input));

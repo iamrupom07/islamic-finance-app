@@ -22,6 +22,7 @@ model User {
   debtEvents      DebtEvent[]
   years           ZakatYear[]
   payments        ZakatPaymentRecord[]
+  paymentCorrections ZakatPaymentCorrection[]
 
   bookmarks       QuranBookmark[]
   readingPosition QuranReadingPosition?
@@ -129,7 +130,10 @@ model Asset {
   valuationMode String    @db.VarChar(10)
   declaredValue Decimal?  @db.Decimal(20, 4)
   weightGrams   Decimal?  @db.Decimal(18, 6)
+  weightQuantity Decimal? @db.Decimal(28,12)
+  weightUnit String? @db.VarChar(8)
   purity        Decimal?  @db.Decimal(8, 6)
+  note          String? @db.VarChar(500)
   valuedOn      DateTime  @db.Date
   version       Int       @default(1)
   createdAt     DateTime  @default(now()) @db.Timestamptz(3)
@@ -148,6 +152,7 @@ model Debt {
   originalAmount  Decimal     @db.Decimal(20, 4)
   remainingAmount Decimal     @db.Decimal(20, 4)
   currency        String      @db.VarChar(3)
+  note            String? @db.VarChar(500)
   openedOn        DateTime    @db.Date
   dueOn           DateTime?   @db.Date
   recoverability  String      @default("UNCERTAIN") @db.VarChar(12)
@@ -172,6 +177,8 @@ model DebtEvent {
   eventType         String   @db.VarChar(16)
   previousRemaining Decimal  @db.Decimal(20, 4)
   nextRemaining     Decimal  @db.Decimal(20, 4)
+  paidOn            DateTime? @db.Date
+  note              String? @db.VarChar(500)
   occurredAt        DateTime @default(now()) @db.Timestamptz(3)
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   debt              Debt     @relation(fields: [debtId, userId], references: [id, userId], onDelete: Cascade)
@@ -224,8 +231,10 @@ model ZakatPaymentRecord {
   note        String?   @db.VarChar(500)
   createdAt   DateTime  @default(now()) @db.Timestamptz(3)
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  corrections ZakatPaymentCorrection[]
   year        ZakatYear @relation(fields: [zakatYearId, userId], references: [id, userId], onDelete: Cascade)
 
+  @@unique([id, userId])
   @@index([userId, zakatYearId])
 }
 
@@ -282,6 +291,7 @@ model QuranBookmark {
 }
 
 model QuranReadingPosition {
+  edition String? @db.VarChar(100)
   userId    String   @id @db.Uuid
   surah     Int
   ayah      Int
@@ -342,4 +352,18 @@ model OAuthChallenge {
   consumedAt DateTime? @db.Timestamptz(3)
 
   @@index([expiresAt])
+}
+
+model ZakatPaymentCorrection {
+ id String @id @default(uuid()) @db.Uuid
+ userId String @db.Uuid
+ paymentId String @db.Uuid
+ sequence Int
+ replacementAmount Decimal @db.Decimal(20,4)
+ reason String @db.VarChar(500)
+ createdAt DateTime @default(now()) @db.Timestamptz(3)
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ payment ZakatPaymentRecord @relation(fields:[paymentId,userId],references:[id,userId],onDelete:Cascade)
+ @@unique([paymentId,sequence])
+ @@index([userId,paymentId,createdAt])
 }

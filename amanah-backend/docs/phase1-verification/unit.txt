@@ -1,0 +1,9 @@
+
+ RUN  v5.0.5 /workspace/scratch/365f766dfaba/amanah-phase1/amanah-backend
+
+
+ Test Files  6 passed (6)
+      Tests  56 passed (56)
+   Start at  10:51:43
+   Duration  546ms (import 46%, tests 32%, transform 20%, worker 2%)
+

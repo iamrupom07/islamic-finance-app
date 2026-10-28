@@ -1,0 +1,22 @@
+APPLY FRONTEND UPDATE
+1. Extract this ZIP at the islamic-finance-app monorepo root. Follow amanah-frontend/FILES_DELETED.txt.
+2. Keep your existing .env. Set EXPO_PUBLIC_API_BASE_URL to the updated backend origin ending /v1.
+3. Apply the matching backend migration/API before testing this client. No paid data API credentials are needed.
+
+From amanah-frontend (Node 24 LTS, pnpm 11.25):
+pnpm install --frozen-lockfile
+pnpm typecheck
+pnpm lint
+pnpm format:check
+pnpm test
+pnpm api:check
+pnpm routes:check
+pnpm content:verify
+pnpm start
+
+Native development build:
+pnpm android
+or, on macOS with Xcode:
+pnpm ios
+
+Expo Go/web do not prove SQLCipher, native social sign-in or reminder behavior. Configure real production HTTPS/app IDs/signing before a production build. Read VERIFICATION.md and RELEASE_GATES.md. The app's release check remains blocked on inherited high dependency findings and missing external release prerequisites.

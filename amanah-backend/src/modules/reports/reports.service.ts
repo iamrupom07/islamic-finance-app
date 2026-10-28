@@ -12,6 +12,54 @@ export class ReportsService {
   constructor(private ctx: Context) {
     this.repo = new ReportsRepository(ctx.db);
   }
+  async overview(uid: string, month?: string) {
+    const selected = await this.report(uid, month);
+    const end = DateTime.fromISO(selected.month + "-01");
+    const trend = await Promise.all(
+      Array.from({ length: 6 }, (_, i) =>
+        this.report(uid, end.minus({ months: 5 - i }).toFormat("yyyy-MM")),
+      ),
+    );
+    const p = await this.repo.preference(uid);
+    const groups = await this.ctx.db.transaction.groupBy({
+      by: ["reportingCurrency"],
+      where: { userId: uid, deletedAt: null, type: "EXPENSE", isSadaqah: true },
+      _sum: { reportingAmount: true },
+    });
+    const set = await latestRates(this.ctx.db);
+    try {
+      if (
+        groups.some((g) => g.reportingCurrency !== p.currency) &&
+        !freshRate(set, this.ctx.now(), this.ctx.env.RATE_MAX_AGE_HOURS)
+      )
+        throw Error();
+      const lifetime = groups.reduce(
+        (sum, g) =>
+          sum.add(
+            fxFromSet(
+              set,
+              g._sum.reportingAmount?.toString() ?? "0",
+              g.reportingCurrency,
+              p.currency,
+            ),
+          ),
+        new D(0),
+      );
+      return {
+        report: selected,
+        trend,
+        lifetimeSadaqah: amount(lifetime),
+        lifetimeStatus: "AVAILABLE" as const,
+      };
+    } catch {
+      return {
+        report: selected,
+        trend,
+        lifetimeSadaqah: null,
+        lifetimeStatus: "CONVERSION_UNAVAILABLE" as const,
+      };
+    }
+  }
   async report(uid: string, month?: string) {
     const p = await this.repo.preference(uid);
     month ??= DateTime.fromJSDate(this.ctx.now())

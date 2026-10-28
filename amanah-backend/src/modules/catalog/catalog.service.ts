@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 export const currencies = [
@@ -89,63 +88,36 @@ export const methods = [
   { id: 8, name: "Gulf Region" },
   { id: 13, name: "Diyanet İşleri Başkanlığı, Turkey" },
 ];
-const contentPayload = z.object({
-  surahs: z.array(
-    z.object({
-      number: z.number().int().min(1).max(114),
-      name: z.string(),
-      arabicName: z.string(),
-      verses: z.array(
-        z.object({
-          number: z.number().int().positive(),
-          arabic: z.string().min(1),
-          translation: z.string().optional(),
-        }),
-      ),
-    }),
-  ),
-  duas: z.array(
-    z.object({
-      id: z.string(),
-      category: z.string(),
-      title: z.string(),
-      arabic: z.string().min(1),
-      translation: z.string(),
-      transliteration: z.string().optional(),
-      reference: z.string(),
-    }),
-  ),
-});
-const bundle = z.object({
-  approved: z.literal(true),
-  source: z.url(),
-  edition: z.string().min(1),
-  license: z.string().min(1),
-  reviewedBy: z.string().min(1),
-  sha256: z.string().regex(/^[a-f0-9]{64}$/),
-  payload: contentPayload,
-});
-export type ContentPayload = z.infer<typeof contentPayload>;
-export function loadContent(path?: string) {
-  if (!path) return null;
-  const b = bundle.parse(JSON.parse(readFileSync(path, "utf8")));
+import { resolve, dirname, join } from "node:path";
+import {
+  contentSchema,
+  validateStructure,
+  type ContentBundle,
+  type EditionLock,
+} from "./content.contract.js";
+const installed = new Map<string, ContentBundle>();
+export type ContentPayload = ContentBundle["payload"];
+export function loadContent(path = resolve("content/bundle.json")) {
+  path ||= resolve("content/bundle.json");
+  if (installed.has(path)) return installed.get(path)!;
+  const raw = JSON.parse(readFileSync(path, "utf8"));
+  if (!raw.approved) return null;
+  const lock = JSON.parse(
+    readFileSync(join(dirname(path), "edition-lock.json"), "utf8"),
+  ) as EditionLock;
+  const hash = (data: unknown) =>
+    createHash("sha256").update(JSON.stringify(data)).digest("hex");
+  if (hash(raw.payload) !== raw.sha256 || raw.sha256 !== lock.sha256)
+    throw Error("CONTENT_HASH_MISMATCH");
+  const b = contentSchema.parse(raw);
+  validateStructure(b, lock);
   if (
-    createHash("sha256").update(JSON.stringify(b.payload)).digest("hex") !==
-    b.sha256
-  )
-    throw new Error("CONTENT_HASH_MISMATCH");
-  if (
-    b.payload.surahs.length !== 114 ||
-    b.payload.surahs.some(
-      (s, i) =>
-        s.number !== i + 1 ||
-        s.verses.length === 0 ||
-        s.verses.some((a, j) => a.number !== j + 1),
+    raw.payload.surahs.some(
+      (s: unknown, i: number) => hash(s) !== lock.surahHashes[i],
     )
   )
-    throw new Error("CONTENT_STRUCTURE_INVALID");
-  if (new Set(b.payload.duas.map((d) => d.id)).size !== b.payload.duas.length)
-    throw new Error("CONTENT_IDS_DUPLICATE");
+    throw Error("CONTENT_SURAH_HASH_MISMATCH");
+  installed.set(path, b);
   return b;
 }
 export type Content = ReturnType<typeof loadContent>;
@@ -174,6 +146,7 @@ export class CatalogService {
       content: {
         available: !!this.content,
         sha256: this.content?.sha256 ?? null,
+        edition: this.content?.edition ?? null,
       },
       social: {
         google: !!this.ctx.env.GOOGLE_ALLOWED_CLIENT_IDS,

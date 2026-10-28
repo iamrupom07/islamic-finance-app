@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Tanzil Uthmani 1.1",
+    "source": "https://tanzil.net/pub/download/index.php?quranType=uthmani&outType=txt&agree=true",
+    "retrievedDate": "2026-10-28 Asia/Dhaka",
+    "sha256": "ac0724796cbbda0f4801470fbbd11d0f3c5802067bae0493466d0128b0c667af"
+  },
+  {
+    "name": "Tanzil Quran metadata",
+    "source": "https://tanzil.net/res/text/metadata/quran-data.xml",
+    "retrievedDate": "2026-10-28 Asia/Dhaka",
+    "sha256": "8867c1d88191472adec9db694b3cd9f135b1a2ef580574d32cf888dcb22c5c7a"
+  },
+  {
+    "name": "QuranEnc English CSV",
+    "source": "https://quranenc.com/en/home/d/csv/english_rwwad",
+    "retrievedDate": "2026-10-28 Asia/Dhaka",
+    "sha256": "409cd64f58e0ad66c2bc2173293485af9181148280bae8209c1f57bd95011ee7"
+  },
+  {
+    "name": "OpenDua v0.0.4",
+    "source": "https://opendua.org/v0.0.4/catalogue.json",
+    "retrievedDate": "2026-10-28 Asia/Dhaka",
+    "sha256": "231dfca7b1d0b5bea8ead8125c8d556121a115c40c9e348e08f4b3ede5194958"
+  },
+  {
+    "name": "MP3Quran reciter catalog",
+    "source": "https://mp3quran.net/api/v3/reciters?language=eng",
+    "retrievedDate": "2026-10-28 Asia/Dhaka",
+    "sha256": "2233981dfcab502ffd4aecdb3f95842a9f774330a0cabb542488fe8a971b677a"
+  }
+]

@@ -46,7 +46,7 @@ import {
   useRetryKey,
   useFormGuard,
 } from "../finance/form-tools";
-
+import { periodProgress } from "../finance/value-tools";
 
 function MosqueDomeIllustration() {
   return (
@@ -102,7 +102,13 @@ function MosqueDomeIllustration() {
   );
 }
 
-function BullionBarsIcon({ size = 22, color = "#0F6E56" }: { size?: number; color?: string }) {
+function BullionBarsIcon({
+  size = 22,
+  color = "#0F6E56",
+}: {
+  size?: number;
+  color?: string;
+}) {
   return (
     <Svg
       width={size}
@@ -121,58 +127,82 @@ function BullionBarsIcon({ size = 22, color = "#0F6E56" }: { size?: number; colo
   );
 }
 
-function formatCurrency(amount: string | number | null | undefined, currency: string = "BDT") {
-  const sym = currency === "BDT" ? "৳" : currency === "USD" ? "$" : currency === "EUR" ? "€" : currency === "GBP" ? "£" : currency;
-  if (amount == null) return `${sym}0`;
+function formatCurrency(
+  amount: string | number | null | undefined,
+  currency: string = "BDT",
+) {
+  const sym =
+    currency === "BDT"
+      ? "৳"
+      : currency === "USD"
+        ? "$"
+        : currency === "EUR"
+          ? "€"
+          : currency === "GBP"
+            ? "£"
+            : currency;
+  if (amount == null) return `${sym}0.00`;
   const num = typeof amount === "string" ? parseFloat(amount) : amount;
-  if (isNaN(num)) return `${sym}0`;
-  return `${sym}${Math.round(num).toLocaleString()}`;
+  if (isNaN(num)) return `${sym}0.00`;
+  const parts = num.toFixed(2).split(".");
+  const integer = parts[0]!.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return `${sym}${integer}.${parts[1]}`;
 }
 
 export function ZakatBreakdown({ summary: s }: { summary: Zakat }) {
   const router = useRouter();
   const currency = s.currency || "BDT";
 
-  const estimateFormatted =
-    s.estimate && parseFloat(s.estimate) > 0
-      ? formatCurrency(s.estimate, currency)
-      : "৳15,000";
-
-  const eligibleAssetsFormatted =
-    s.eligibleAssets && parseFloat(s.eligibleAssets) > 0
-      ? formatCurrency(s.eligibleAssets, currency)
-      : "৳660,000";
-
-  const debtsFormatted =
-    s.eligibleLiabilities && parseFloat(s.eligibleLiabilities) > 0
-      ? `-${formatCurrency(s.eligibleLiabilities, currency)}`
-      : "-৳60,000";
-
-  const netWealthFormatted =
-    s.netEligibleWealth && parseFloat(s.netEligibleWealth) > 0
-      ? formatCurrency(s.netEligibleWealth, currency)
-      : "৳600,000";
+  const estimateFormatted = formatCurrency(s.estimate ?? "0", currency);
+  const eligibleAssetsFormatted = formatCurrency(
+    s.eligibleAssets ?? "0",
+    currency,
+  );
+  const debtsFormatted = `-${formatCurrency(s.eligibleLiabilities ?? "0", currency)}`;
+  const netWealthFormatted = formatCurrency(
+    s.netEligibleWealth ?? "0",
+    currency,
+  );
 
   const appliedRate = s.annualRate
     ? `${(parseFloat(s.annualRate) * 100).toFixed(1)}%`
     : "2.5%";
 
-  const nisabValueFormatted =
-    s.nisabValue && parseFloat(s.nisabValue) > 0
-      ? formatCurrency(s.nisabValue, currency)
-      : "৳105,000";
+  const nisabValueFormatted = formatCurrency(s.nisabValue ?? "0", currency);
 
   const nisabStandardName =
     s.nisabStandard === "GOLD" ? "Gold standard" : "Silver standard";
 
   const nisabGramsText = s.nisabGrams
     ? `Based on ${s.nisabGrams} grams of ${s.nisabStandard === "GOLD" ? "gold" : "silver"}`
-    : "Based on 595 grams of silver";
+    : "Based on pure metal threshold";
 
-  const startHijri = s.period?.startHijri || "1 Rabi' al-Thani 1447";
-  const startDateCivil = s.period?.start || "24 Oct 2025";
-  const dueHijri = s.period?.endHijri || "1 Rabi' al-Thani 1448";
-  const dueDateCivil = s.period?.end || "13 Oct 2026";
+  const startHijri = s.period?.startHijri || "Not set";
+  const startDateCivil = s.period?.start || "Tap to set anniversary";
+  const dueHijri = s.period?.endHijri || "—";
+  const dueDateCivil = s.period?.end || "1 lunar year (Hawl)";
+
+  const isBelowNisab = s.status === "BELOW_NISAB";
+  const isPotentiallyDue = s.status === "POTENTIALLY_DUE";
+
+  const metalPricePerGram =
+    s.nisabValue && s.nisabGrams && parseFloat(s.nisabGrams) > 0
+      ? (parseFloat(s.nisabValue) / parseFloat(s.nisabGrams)).toFixed(0)
+      : null;
+  const standardLabel =
+    s.nisabStandard === "GOLD"
+      ? "Gold price (cached)"
+      : "Silver price (cached)";
+  const currencySym = currency === "BDT" ? "৳" : currency;
+
+  const progress =
+    s.period?.start && s.period?.end
+      ? periodProgress(
+          s.period.start,
+          s.period.end,
+          new Date().toISOString().slice(0, 10),
+        )
+      : null;
 
   return (
     <View style={{ gap: 16 }}>
@@ -184,6 +214,28 @@ export function ZakatBreakdown({ summary: s }: { summary: Zakat }) {
           <Text style={styles.heroNote}>
             Based on your recorded values and chosen nisab standard.
           </Text>
+          {s.status ? (
+            <View
+              style={{
+                marginTop: 8,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                backgroundColor: isBelowNisab ? "#E2E8F0" : "#DCF5EC",
+                borderRadius: 8,
+                alignSelf: "flex-start",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: "700",
+                  color: isBelowNisab ? "#475569" : "#0F6E56",
+                }}
+              >
+                {s.status.replace(/_/g, " ")}
+              </Text>
+            </View>
+          ) : null}
         </View>
         <MosqueDomeIllustration />
       </View>
@@ -204,7 +256,9 @@ export function ZakatBreakdown({ summary: s }: { summary: Zakat }) {
         {/* Row 2: Less eligible short-term debts */}
         <View style={styles.calcRow}>
           <View style={styles.calcLabelRow}>
-            <Text style={styles.calcLabelText}>Less eligible short-term debts</Text>
+            <Text style={styles.calcLabelText}>
+              Less eligible short-term debts
+            </Text>
             <InfoIcon size={14} color="#94A3B8" />
           </View>
           <Text style={styles.calcValueText}>{debtsFormatted}</Text>
@@ -250,7 +304,7 @@ export function ZakatBreakdown({ summary: s }: { summary: Zakat }) {
             onPress={() => router.push("/settings/nisab")}
             style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
           >
-            <Text style={styles.changeLinkText}>Change  {">"}</Text>
+            <Text style={styles.changeLinkText}>Change {">"}</Text>
           </Pressable>
         </View>
 
@@ -263,31 +317,54 @@ export function ZakatBreakdown({ summary: s }: { summary: Zakat }) {
               <Text style={styles.nisabStandardTitle}>{nisabStandardName}</Text>
               <Text style={styles.nisabValueRow}>
                 <Text style={styles.nisabValueBold}>{nisabValueFormatted}</Text>
-                <Text style={styles.illustrativeText}> (illustrative)</Text>
               </Text>
               <Text style={styles.nisabGramsSubtext}>{nisabGramsText}</Text>
             </View>
           </View>
 
-          <View style={styles.aboveNisabPill}>
-            <View style={styles.checkCircle}>
+          <View
+            style={[
+              styles.aboveNisabPill,
+              isBelowNisab && { backgroundColor: "#F1F5F9" },
+            ]}
+          >
+            <View
+              style={[
+                styles.checkCircle,
+                isBelowNisab && { backgroundColor: "#64748B" },
+              ]}
+            >
               <Check size={11} color="#FFFFFF" strokeWidth={3} />
             </View>
-            <Text style={styles.aboveNisabText}>Above nisab</Text>
+            <Text
+              style={[
+                styles.aboveNisabText,
+                isBelowNisab && { color: "#64748B" },
+              ]}
+            >
+              {isBelowNisab ? "Below nisab" : "Above nisab"}
+            </Text>
           </View>
         </View>
 
         <View style={styles.cardDivider} />
 
         <View style={styles.cachedPriceRow}>
-          <Text style={styles.cachedPriceLabel}>Silver price (cached)</Text>
+          <Text style={styles.cachedPriceLabel}>{standardLabel}</Text>
           <View style={styles.cachedPriceValueCol}>
-            <Text style={styles.cachedPriceValue}>
-              <Text style={{ fontFamily: "OutfitMedium" }}>৳176</Text> per gram
-            </Text>
-            <Text style={styles.cachedPriceUpdated}>
-              Updated: 26 Oct 2026, 09:10 AM
-            </Text>
+            {metalPricePerGram ? (
+              <Text style={styles.cachedPriceValue}>
+                <Text
+                  style={{ fontFamily: "OutfitMedium" }}
+                >{`${currencySym}${metalPricePerGram}`}</Text>{" "}
+                per gram
+              </Text>
+            ) : null}
+            {s.sourceAt ? (
+              <Text style={styles.cachedPriceUpdated}>
+                {`Updated: ${s.sourceAt.slice(0, 10)}`}
+              </Text>
+            ) : null}
           </View>
         </View>
       </View>
@@ -328,28 +405,64 @@ export function ZakatBreakdown({ summary: s }: { summary: Zakat }) {
         </View>
 
         {/* Days remaining and progress */}
-        <View style={styles.progressRow}>
-          <Text style={styles.remainingDaysBold}>18 days remaining</Text>
-          <Text style={styles.totalDaysMuted}>347 of 365 days</Text>
-        </View>
+        {progress ? (
+          <>
+            <View style={styles.progressRow}>
+              <Text
+                style={styles.remainingDaysBold}
+              >{`${progress.daysRemaining} days remaining`}</Text>
+              <Text
+                style={styles.totalDaysMuted}
+              >{`${progress.daysElapsed} of ${progress.totalDays} days`}</Text>
+            </View>
 
-        <View style={styles.anniversaryProgressTrack}>
-          <View style={styles.anniversaryProgressFill} />
-        </View>
+            <View style={styles.anniversaryProgressTrack}>
+              <View
+                style={[
+                  styles.anniversaryProgressFill,
+                  {
+                    width: `${
+                      progress.totalDays > 0
+                        ? Math.min(
+                            100,
+                            Math.max(
+                              0,
+                              Math.round(
+                                (progress.daysElapsed / progress.totalDays) *
+                                  100,
+                              ),
+                            ),
+                          )
+                        : 0
+                    }%`,
+                  },
+                ]}
+              />
+            </View>
+          </>
+        ) : (
+          <View style={styles.progressRow}>
+            <Text style={styles.totalDaysMuted}>
+              No qualifying period has been established.
+            </Text>
+          </View>
+        )}
       </Pressable>
 
       {/* 5. Mark Zakat as Paid Primary Button */}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Mark zakat as paid"
-        onPress={() => router.push("/zakat/record-payment")}
-        style={({ pressed }) => [
-          styles.markPaidButton,
-          { opacity: pressed ? 0.85 : 1 },
-        ]}
-      >
-        <Text style={styles.markPaidButtonText}>Mark zakat as paid  →</Text>
-      </Pressable>
+      {isPotentiallyDue ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Record paid elsewhere"
+          onPress={() => router.push("/zakat/record-payment")}
+          style={({ pressed }) => [
+            styles.markPaidButton,
+            { opacity: pressed ? 0.85 : 1 },
+          ]}
+        >
+          <Text style={styles.markPaidButtonText}>Record paid elsewhere</Text>
+        </Pressable>
+      ) : null}
 
       {/* 6. Legal & Religious Disclaimer Footer */}
       <View style={styles.disclaimerFooter}>
@@ -370,7 +483,10 @@ export function ZakatScreen() {
   );
 
   return (
-    <SafeAreaView edges={["top", "bottom", "left", "right"]} style={styles.safeArea}>
+    <SafeAreaView
+      edges={["top", "bottom", "left", "right"]}
+      style={styles.safeArea}
+    >
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -380,7 +496,9 @@ export function ZakatScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Back"
-            onPress={() => router.back()}
+            onPress={() =>
+              router.canGoBack() ? router.back() : router.replace("/home")
+            }
             style={({ pressed }) => [
               styles.circleButton,
               { opacity: pressed ? 0.7 : 1 },
@@ -407,42 +525,7 @@ export function ZakatScreen() {
         </View>
 
         {/* Content */}
-        {q.data ? (
-          <ZakatBreakdown summary={q.data} />
-        ) : (
-          <ZakatBreakdown
-            summary={{
-              status: "ESTIMATE_ONLY",
-              currency: "BDT",
-              estimate: "15000",
-              netEligibleWealth: "600000",
-              eligibleAssets: "660000",
-              eligibleReceivables: "0",
-              eligibleLiabilities: "60000",
-              nisabValue: "105000",
-              nisabStandard: "SILVER",
-              nisabGrams: "595",
-              annualRate: "0.025",
-              policyVersion: "1.0",
-              policyId: null,
-              sourceAt: null,
-              source: null,
-              rateSetId: null,
-              isStale: false,
-              period: {
-                start: "2025-10-24",
-                end: "2026-10-13",
-                startHijri: "1 Rabi' al-Thani 1447",
-                endHijri: "1 Rabi' al-Thani 1448",
-                method: "CIVIL_LUNAR",
-              },
-              lines: [],
-              reasons: [],
-              disclaimer: "Amanah provides an estimate, not a religious ruling.",
-              fingerprint: "",
-            }}
-          />
-        )}
+        {q.data ? <ZakatBreakdown summary={q.data} /> : null}
       </ScrollView>
     </SafeAreaView>
   );

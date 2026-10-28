@@ -32,6 +32,7 @@ export function exportsRoutes(route: Register, ctx: Context) {
     {
       querystring: query,
       raw: true,
+      rawContent: { "application/json": z.unknown(), "text/csv": z.string() },
       description:
         "Authenticated bounded streaming export. Response is a file, not a JSON API envelope. JSON and CSV exports include all owned records, including soft-deleted financial rows.",
     },

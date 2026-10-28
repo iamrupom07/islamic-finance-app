@@ -1,0 +1,11 @@
+Translation Info:
+#---------------------------
+# Translation of the meanings of the Noble Qur'an
+# Language: English
+# Translation ID: english_rwwad
+# Source: https://quranenc.com
+# URL: https://quranenc.com/en/browse/english_rwwad
+# Last update: 2026-10-21 01:12:31 (v1.0.20-csv.1)
+# Check for updates: https://quranenc.com/check/english_rwwad/v1.0.20-csv.1
+# PLEASE DON'T REMOVE THIS IMPORTANT INFORMATION!
+#---------------------------

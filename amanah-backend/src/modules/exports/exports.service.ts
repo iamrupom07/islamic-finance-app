@@ -29,6 +29,7 @@ export class ExportService {
       "debtEvent",
       "zakatYear",
       "zakatPaymentRecord",
+      "zakatPaymentCorrection",
       "quranBookmark",
       "quranReadingPosition",
       "duaFavorite",
@@ -89,6 +90,8 @@ export class ExportService {
             debtEvent: () => db.debtEvent.findMany(args),
             zakatYear: () => db.zakatYear.findMany(args),
             zakatPaymentRecord: () => db.zakatPaymentRecord.findMany(args),
+            zakatPaymentCorrection: () =>
+              db.zakatPaymentCorrection.findMany(args),
             quranBookmark: () => db.quranBookmark.findMany(args),
           };
           const rows = await readers[table]();

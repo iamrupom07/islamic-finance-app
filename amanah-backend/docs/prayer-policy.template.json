@@ -1,0 +1,17 @@
+{
+  "approved": false,
+  "version": "REQUIRES_QUALIFIED_REVIEW",
+  "reviewedBy": "",
+  "approvedAt": "",
+  "source": "",
+  "cityIds": [],
+  "methodIds": [],
+  "schools": [],
+  "sunriseEndsAfterMinutes": null,
+  "zenithStartsBeforeDhuhrMinutes": null,
+  "sunsetStartsBeforeMinutes": null,
+  "ishaEnd": "NEXT_FAJR",
+  "ishaPreferredUntil": "FIRST_THIRD",
+  "explanation": "Replace every interval criterion after qualified local review. This template must not be configured as an approved policy.",
+  "voluntaryPrayerExplanation": "Add reviewed guidance about other voluntary-prayer restrictions and exceptions."
+}

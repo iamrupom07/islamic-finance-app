@@ -137,7 +137,7 @@ export async function createApp(
       {
         requestId: req.id,
         method: req.method,
-        url: req.raw.url ?? req.url,
+
         route: req.routeOptions.url,
         status: reply.statusCode,
         durationMs: reply.elapsedTime,
@@ -195,11 +195,8 @@ export async function createApp(
   dashboardRoutes(route, ctx, tx, zakat, prayer);
   app.get("/v1/openapi.json", async () => app.swagger());
   app.setNotFoundHandler((req, reply) => {
-    if (req.url === "/" && req.headers.accept?.includes("text/html")) {
-      return reply.redirect("http://localhost:8081");
-    }
     return reply.code(404).send({
-      error: { code: "NOT_FOUND", message: `This route is unavailable (${req.method} ${req.url}).` },
+      error: { code: "NOT_FOUND", message: "This route is unavailable." },
       meta: { requestId: req.id },
     });
   });

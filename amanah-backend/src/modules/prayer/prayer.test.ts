@@ -11,6 +11,7 @@ const payload = {
       Dhuhr: "12:00",
       Asr: "15:20",
       Maghrib: "17:30",
+      Sunset: "17:30",
       Isha: "19:00",
     },
     date: {

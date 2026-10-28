@@ -6,6 +6,12 @@ export const verseRef = z
     ayah: z.coerce.number().int().positive().max(286),
   })
   .strict();
-export const readingInput = verseRef.extend({ version });
-export const readingView = readingInput.extend({ updatedAt: z.string() });
+export const readingInput = verseRef.extend({
+  version,
+  edition: z.string().max(100).optional(),
+});
+export const readingView = readingInput.extend({
+  updatedAt: z.string(),
+  edition: z.string().nullable(),
+});
 export const bookmarkView = verseRef.extend({ createdAt: z.string() });

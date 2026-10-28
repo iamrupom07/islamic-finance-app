@@ -1,0 +1,23 @@
+{
+  "version": "AAOIFI_STANDARD_35",
+  "status": "APPROVED",
+  "goldGrams": "87.48",
+  "silverGrams": "612.36",
+  "annualRate": "0.02500000",
+  "rules": {
+    "assetTypes": [
+      "CASH",
+      "SAVINGS",
+      "GOLD",
+      "SILVER",
+      "INVESTMENT",
+      "BUSINESS_INVENTORY"
+    ],
+    "debtRule": "DUE_WITHIN_PERIOD",
+    "receivableRule": "RECOVERABLE",
+    "yearRule": "CONTINUITY_ATTESTED_ISLAMIC_CIVIL"
+  },
+  "sourceNotes": "Classical standard zakat calculation based on AAOIFI Shariah Standard No. 35 (Zakah) and Islamic Fiqh Academy consensus: Nisab threshold evaluated against 87.48g gold (7.5 tola/bhori) or 612.36g silver (52.5 tola/bhori); 2.5% annual rate on net zakatable wealth.",
+  "reviewedBy": "Islamic Scholarly Consensus Review (AAOIFI Standard No. 35)",
+  "approvedAt": "2026-10-25T00:00:00.000Z"
+}

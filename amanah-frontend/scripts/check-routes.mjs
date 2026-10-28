@@ -78,3 +78,15 @@ for (const item of JSON.parse(
 console.log(
   `${routes.length} unique route destinations; all required destinations and source screen mappings resolve.`,
 );
+// Check actual static navigation calls in addition to the destination inventory.
+for (const file of files("src").filter((f) => /\.[jt]sx?$/.test(f))) {
+  const source = fs.readFileSync(file, "utf8");
+  for (const match of source.matchAll(
+    /router\.(?:push|replace)\(\s*["']([^"']+)["']/g,
+  )) {
+    const destination = match[1].split("?")[0];
+    if (!routes.includes(destination))
+      throw Error(`Unmatched navigation ${destination} in ${file}`);
+  }
+}
+console.log("Static navigation calls resolve.");

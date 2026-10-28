@@ -8,7 +8,10 @@ import {
   Modal,
   ActivityIndicator,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import * as Crypto from "expo-crypto";
@@ -233,7 +236,9 @@ function formatAmount(
     const num = parseFloat(amountStr);
     if (!isNaN(num)) {
       const isInteger = num % 1 === 0 || amountStr.endsWith(".00");
-      const parts = (isInteger ? Math.round(num).toString() : num.toFixed(2)).split(".");
+      const parts = (
+        isInteger ? Math.round(num).toString() : num.toFixed(2)
+      ).split(".");
       const integerPart = parts[0]!.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
       formattedNumber =
         parts.length > 1 && parts[1] !== "00"
@@ -245,7 +250,10 @@ function formatAmount(
   }
 
   if (locale === "bn") {
-    formattedNumber = formattedNumber.replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[Number(d)]!);
+    formattedNumber = formattedNumber.replace(
+      /\d/g,
+      (d) => "০১২৩৪৫৬৭৮৯"[Number(d)]!,
+    );
   }
 
   return `${sign}${symbol}${formattedNumber}`;
@@ -445,7 +453,9 @@ export function TransactionDetailScreen() {
             accessibilityRole="button"
             accessibilityLabel="Back"
             onPress={() =>
-              router.canGoBack() ? router.back() : router.replace("/transactions")
+              router.canGoBack()
+                ? router.back()
+                : router.replace("/transactions")
             }
             style={[
               styles.circleButton,
@@ -495,14 +505,13 @@ export function TransactionDetailScreen() {
   if (!transaction) return null;
 
   const categoryKey = transaction.category.toUpperCase();
-  const meta =
-    CATEGORY_MAP[categoryKey] ?? {
-      heroTitle: transaction.category.replaceAll("_", " "),
-      categoryLabel: transaction.category.replaceAll("_", " "),
-      Icon: transaction.type === "INCOME" ? TrendingUp : ShoppingCart,
-      color: transaction.type === "INCOME" ? "#0F6E56" : "#111827",
-      bg: transaction.type === "INCOME" ? "#DCF5EC" : "#FDECEF",
-    };
+  const meta = CATEGORY_MAP[categoryKey] ?? {
+    heroTitle: transaction.category.replaceAll("_", " "),
+    categoryLabel: transaction.category.replaceAll("_", " "),
+    Icon: transaction.type === "INCOME" ? TrendingUp : ShoppingCart,
+    color: transaction.type === "INCOME" ? "#0F6E56" : "#111827",
+    bg: transaction.type === "INCOME" ? "#DCF5EC" : "#FDECEF",
+  };
 
   const formattedAmount = formatAmount(
     transaction.amount,

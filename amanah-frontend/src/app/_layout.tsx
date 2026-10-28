@@ -1,4 +1,7 @@
 import React from "react";
+import { PlayerProvider, MiniPlayer } from "../core/audio/PlayerProvider";
+import { PlayerLayoutProvider } from "../core/audio/layout";
+import { PrivacyProvider } from "../core/privacy/PrivacyProvider";
 import { ErrorBoundary as AppErrorBoundary } from "../core/ErrorBoundary";
 import { Stack } from "expo-router";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -26,10 +29,17 @@ export default function Root() {
           <AuthProvider>
             <ThemeProvider>
               <ToastProvider>
-                <ContentProvider>
-                  <RuntimeEffects />
-                  <Stack screenOptions={{ headerShown: false }} />
-                </ContentProvider>
+                <PrivacyProvider>
+                  <PlayerLayoutProvider>
+                    <ContentProvider>
+                      <PlayerProvider>
+                        <RuntimeEffects />
+                        <Stack screenOptions={{ headerShown: false }} />
+                        <MiniPlayer />
+                      </PlayerProvider>
+                    </ContentProvider>
+                  </PlayerLayoutProvider>
+                </PrivacyProvider>
               </ToastProvider>
             </ThemeProvider>
           </AuthProvider>

@@ -1,1 +1,2 @@
-NONE. The existing initial and invariant migrations are retained; the OAuth nonce table is introduced by an additive third migration.
+This is a complete merged source package. No overlay or deletion step is required.
+Phase 1 deletions are already reflected in this tree. Historical patch manifests are in docs/delivery-history/.

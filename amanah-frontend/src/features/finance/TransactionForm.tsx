@@ -72,7 +72,13 @@ const schema = z.object({
 
 type Form = z.infer<typeof schema>;
 
-function SadaqahGivingHandIcon({ size = 22, color = "#0F6E56" }: { size?: number; color?: string }) {
+function SadaqahGivingHandIcon({
+  size = 22,
+  color = "#0F6E56",
+}: {
+  size?: number;
+  color?: string;
+}) {
   return (
     <Svg
       width={size}
@@ -125,7 +131,12 @@ const CATEGORY_META: Record<
 > = {
   // Income
   SALARY: { label: "Salary", Icon: Briefcase, color: "#0284C7", bg: "#EBF5FF" },
-  BUSINESS: { label: "Business", Icon: Building2, color: "#0F6E56", bg: "#DCF5EC" },
+  BUSINESS: {
+    label: "Business",
+    Icon: Building2,
+    color: "#0F6E56",
+    bg: "#DCF5EC",
+  },
   GIFT: { label: "Gift", Icon: Gift, color: "#D97706", bg: "#FEF3C7" },
   INVESTMENT_RETURN: {
     label: "Investment return",
@@ -216,7 +227,10 @@ export function TransactionForm({
   const remove = useAccountMutation(async () => {
     if (!record) return;
     await api.DELETE("/v1/transactions/{id}", {
-      params: { path: { id: record.id }, header: { "idempotency-key": deleteKey } },
+      params: {
+        path: { id: record.id },
+        header: { "idempotency-key": deleteKey },
+      },
       headers: { "idempotency-key": deleteKey },
       body: { version: record.version },
     });
@@ -236,7 +250,9 @@ export function TransactionForm({
     defaultValues: {
       amount: record?.amount ?? "",
       currency: record?.currency ?? account?.preferences?.currency ?? "BDT",
-      localDate: record?.localDate ?? localDate(account?.preferences?.timezone ?? "Asia/Dhaka"),
+      localDate:
+        record?.localDate ??
+        localDate(account?.preferences?.timezone ?? "Asia/Dhaka"),
       category: record?.category ?? defaultCategory,
       description: record?.description ?? "",
       isSadaqah: record?.isSadaqah ?? false,
@@ -306,8 +322,7 @@ export function TransactionForm({
   const selectedDate = form.watch("localDate");
   const noteValue = form.watch("description") || "";
 
-  const categoryMeta =
-    CATEGORY_META[selectedCategory] || CATEGORY_META.OTHER!;
+  const categoryMeta = CATEGORY_META[selectedCategory] || CATEGORY_META.OTHER!;
 
   const currencySymbol =
     selectedCurrency === "BDT"
@@ -321,7 +336,10 @@ export function TransactionForm({
             : selectedCurrency;
 
   return (
-    <SafeAreaView edges={["top", "bottom", "left", "right"]} style={styles.safeArea}>
+    <SafeAreaView
+      edges={["top", "bottom", "left", "right"]}
+      style={styles.safeArea}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.keyboardContainer}
@@ -451,9 +469,7 @@ export function TransactionForm({
                   </View>
                   <View style={styles.detailTextCol}>
                     <Text style={styles.detailLabel}>Source</Text>
-                    <Text style={styles.detailValue}>
-                      {categoryMeta.label}
-                    </Text>
+                    <Text style={styles.detailValue}>{categoryMeta.label}</Text>
                   </View>
                   <ChevronRight size={18} color="#64748B" strokeWidth={1.8} />
                 </Pressable>
@@ -564,7 +580,11 @@ export function TransactionForm({
                     ]}
                   >
                     <View style={styles.selectBoxLeft}>
-                      <CalendarIcon size={19} color="#182322" strokeWidth={1.8} />
+                      <CalendarIcon
+                        size={19}
+                        color="#182322"
+                        strokeWidth={1.8}
+                      />
                       <Text style={styles.selectBoxValueText}>
                         {formatDateDisplay(selectedDate)}
                       </Text>
@@ -660,7 +680,12 @@ export function TransactionForm({
 
           {/* Info Banner Card */}
           <View style={styles.infoBannerCard}>
-            <Info size={20} color="#0F6E56" strokeWidth={1.8} style={{ marginTop: 1 }} />
+            <Info
+              size={20}
+              color="#0F6E56"
+              strokeWidth={1.8}
+              style={{ marginTop: 1 }}
+            />
             <Text style={styles.infoBannerText}>
               {record
                 ? "Changes update your finance overview, category spending and sadaqah records."
@@ -876,7 +901,10 @@ export function TransactionForm({
               />
               <Pressable
                 onPress={() => {
-                  form.setValue("localDate", localDate(account?.preferences?.timezone ?? "Asia/Dhaka"));
+                  form.setValue(
+                    "localDate",
+                    localDate(account?.preferences?.timezone ?? "Asia/Dhaka"),
+                  );
                   setDateModalOpen(false);
                 }}
                 style={styles.todayPillButton}

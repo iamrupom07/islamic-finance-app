@@ -11,7 +11,10 @@ import {
   Platform,
   Modal,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,6 +43,7 @@ import { api, dataOf } from "../../core/api/client";
 import { useAccountMutation } from "../../core/api/hooks";
 import { useAuth } from "../../core/auth/AuthProvider";
 import type { Debt } from "../../core/api/types";
+import { localDate } from "../../core/i18n/formatters";
 import {
   positive,
   zeroOrPositive,
@@ -52,7 +56,11 @@ import {
 const schema = z
   .object({
     direction: z.enum(["I_OWE", "OWED_TO_ME"]),
-    label: z.string().trim().min(1, "Person or organization is required").max(100),
+    label: z
+      .string()
+      .trim()
+      .min(1, "Person or organization is required")
+      .max(100),
     originalAmount: positive,
     remainingAmount: zeroOrPositive,
     currency: z.enum([
@@ -145,11 +153,14 @@ export function DebtForm({
     "BDT";
 
   const defaultDirection = record?.direction ?? "I_OWE";
-  const defaultLabel = record?.label ?? (defaultDirection === "I_OWE" ? "Family member" : "Colleague");
-  const defaultAmount = record ? String(record.originalAmount) : "20000";
-  const defaultOpenedOn = record?.openedOn ?? "2026-10-26";
-  const defaultDueOn = record?.dueOn ?? "2026-12-20";
-  const defaultNote = (record as unknown as { note?: string })?.note ?? "Borrowed for family expense";
+  const defaultLabel = record?.label ?? "";
+  const defaultAmount = record ? String(record.originalAmount) : "";
+  const defaultRemaining = record ? String(record.remainingAmount) : "";
+  const defaultOpenedOn =
+    record?.openedOn ??
+    localDate(account?.preferences?.timezone ?? "Asia/Dhaka");
+  const defaultDueOn = record?.dueOn ?? "";
+  const defaultNote = (record as unknown as { note?: string })?.note ?? "";
 
   const form = useForm<Form>({
     resolver: zodResolver(schema),
@@ -157,7 +168,7 @@ export function DebtForm({
       direction: defaultDirection,
       label: defaultLabel,
       originalAmount: defaultAmount,
-      remainingAmount: record?.remainingAmount ?? defaultAmount,
+      remainingAmount: defaultRemaining || defaultAmount,
       currency: defaultCurrency,
       openedOn: defaultOpenedOn,
       dueOn: defaultDueOn,
@@ -182,16 +193,21 @@ export function DebtForm({
   }, [saved, router, onSuccess]);
 
   const mutation = useAccountMutation(async (v: Form) => {
-    const rawAmount = v.originalAmount.replaceAll(",", "").trim();
+    const rawAmount = v.originalAmount
+      ? String(v.originalAmount).replaceAll(",", "").trim()
+      : "";
     const b = {
       direction: v.direction,
       label: v.label.trim(),
       originalAmount: rawAmount,
-      remainingAmount: rawAmount,
+      remainingAmount: record
+        ? (v.remainingAmount ?? record.remainingAmount)
+        : rawAmount,
       currency: v.currency,
       openedOn: v.openedOn,
       dueOn: v.dueOn || null,
       recoverability: v.recoverability,
+      note: v.note?.trim() || null,
     };
     const header = { "idempotency-key": key(b) };
     return record
@@ -291,7 +307,9 @@ export function DebtForm({
               accessibilityRole="tab"
               accessibilityLabel="I owe"
               accessibilityState={{ selected: selectedDirection === "I_OWE" }}
-              onPress={() => form.setValue("direction", "I_OWE", { shouldDirty: true })}
+              onPress={() =>
+                form.setValue("direction", "I_OWE", { shouldDirty: true })
+              }
               style={[
                 styles.segmentedTab,
                 selectedDirection === "I_OWE" && styles.segmentedTabActive,
@@ -312,8 +330,12 @@ export function DebtForm({
             <Pressable
               accessibilityRole="tab"
               accessibilityLabel="Owed to me"
-              accessibilityState={{ selected: selectedDirection === "OWED_TO_ME" }}
-              onPress={() => form.setValue("direction", "OWED_TO_ME", { shouldDirty: true })}
+              accessibilityState={{
+                selected: selectedDirection === "OWED_TO_ME",
+              }}
+              onPress={() =>
+                form.setValue("direction", "OWED_TO_ME", { shouldDirty: true })
+              }
               style={[
                 styles.segmentedTab,
                 selectedDirection === "OWED_TO_ME" && styles.segmentedTabActive,
@@ -334,7 +356,8 @@ export function DebtForm({
 
           {/* Amount Card (Image 2) */}
           <Text style={[styles.fieldLabel, { color: colors.ink }]}>
-            Amount ({selectedCurrency}) <Text style={styles.requiredStar}>*</Text>
+            Amount ({selectedCurrency}){" "}
+            <Text style={styles.requiredStar}>*</Text>
           </Text>
 
           <View
@@ -410,7 +433,9 @@ export function DebtForm({
           ) : null}
 
           {/* Person or Organization * (Image 2) */}
-          <Text style={[styles.fieldLabel, { color: colors.ink, marginTop: 18 }]}>
+          <Text
+            style={[styles.fieldLabel, { color: colors.ink, marginTop: 18 }]}
+          >
             Person or organization <Text style={styles.requiredStar}>*</Text>
           </Text>
 
@@ -461,7 +486,9 @@ export function DebtForm({
           ) : null}
 
           {/* Recorded Date * (Image 2) */}
-          <Text style={[styles.fieldLabel, { color: colors.ink, marginTop: 18 }]}>
+          <Text
+            style={[styles.fieldLabel, { color: colors.ink, marginTop: 18 }]}
+          >
             Recorded date <Text style={styles.requiredStar}>*</Text>
           </Text>
 
@@ -496,7 +523,9 @@ export function DebtForm({
           </Pressable>
 
           {/* Expected Settlement Date (optional) (Image 2) */}
-          <Text style={[styles.fieldLabel, { color: colors.ink, marginTop: 18 }]}>
+          <Text
+            style={[styles.fieldLabel, { color: colors.ink, marginTop: 18 }]}
+          >
             Expected settlement date (optional)
           </Text>
 
@@ -519,19 +548,27 @@ export function DebtForm({
                 style={[
                   styles.datePickerText,
                   {
-                    color: selectedDueDate ? colors.ink : (isDark ? "#94A3B8" : "#64748B"),
+                    color: selectedDueDate
+                      ? colors.ink
+                      : isDark
+                        ? "#94A3B8"
+                        : "#64748B",
                     fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium",
                   },
                 ]}
               >
-                {selectedDueDate ? formatDateDisplay(selectedDueDate) : "Select date"}
+                {selectedDueDate
+                  ? formatDateDisplay(selectedDueDate)
+                  : "Select date"}
               </Text>
             </View>
             <ChevronRight size={18} color="#94A3B8" strokeWidth={2} />
           </Pressable>
 
           {/* Note (optional) (Image 2) */}
-          <Text style={[styles.fieldLabel, { color: colors.ink, marginTop: 18 }]}>
+          <Text
+            style={[styles.fieldLabel, { color: colors.ink, marginTop: 18 }]}
+          >
             Note (optional)
           </Text>
 
@@ -586,14 +623,21 @@ export function DebtForm({
               },
             ]}
           >
-            <Info size={20} color="#0F6E56" strokeWidth={2.2} style={{ marginTop: 2, marginRight: 12 }} />
+            <Info
+              size={20}
+              color="#0F6E56"
+              strokeWidth={2.2}
+              style={{ marginTop: 2, marginRight: 12 }}
+            />
             <Text
               style={[
                 styles.infoBannerText,
                 { color: isDark ? "#A3D4B6" : "#335C4D" },
               ]}
             >
-              Eligible short-term debts may affect your zakat estimate depending on your settings. Amanah provides an estimate, not a religious ruling.
+              Eligible short-term debts may affect your zakat estimate depending
+              on your settings. Amanah provides an estimate, not a religious
+              ruling.
             </Text>
           </View>
 
@@ -629,12 +673,19 @@ export function DebtForm({
                 <Text
                   style={[
                     styles.primarySaveButtonText,
-                    { fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium" },
+                    {
+                      fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium",
+                    },
                   ]}
                 >
                   Save debt
                 </Text>
-                <ArrowRight size={20} color="#FFFFFF" strokeWidth={2.2} style={{ marginLeft: 8 }} />
+                <ArrowRight
+                  size={20}
+                  color="#FFFFFF"
+                  strokeWidth={2.2}
+                  style={{ marginLeft: 8 }}
+                />
               </>
             )}
           </Pressable>
@@ -650,7 +701,12 @@ export function DebtForm({
                 { opacity: pressed ? 0.8 : 1 },
               ]}
             >
-              <Trash2 size={18} color="#EF4444" strokeWidth={2} style={{ marginRight: 8 }} />
+              <Trash2
+                size={18}
+                color="#EF4444"
+                strokeWidth={2}
+                style={{ marginRight: 8 }}
+              />
               <Text
                 style={[
                   styles.deleteButtonText,
@@ -712,7 +768,8 @@ export function DebtForm({
                     {
                       color:
                         selectedCurrency === opt.value ? "#0F6E56" : colors.ink,
-                      fontWeight: selectedCurrency === opt.value ? "700" : "500",
+                      fontWeight:
+                        selectedCurrency === opt.value ? "700" : "500",
                     },
                   ]}
                 >
@@ -750,33 +807,39 @@ export function DebtForm({
               </Pressable>
             </View>
 
-            {["2026-10-26", "2026-10-25", "2026-10-20", "2026-10-15"].map((dStr) => (
-              <Pressable
-                key={dStr}
-                onPress={() => {
-                  form.setValue("openedOn", dStr, { shouldDirty: true });
-                  setRecordedDateModalOpen(false);
-                }}
-                style={[
-                  styles.modalItemRow,
-                  selectedRecordedDate === dStr && {
-                    backgroundColor: isDark ? "#172E24" : "#EBF5F0",
-                  },
-                ]}
-              >
-                <Text
+            {["2026-10-26", "2026-10-25", "2026-10-20", "2026-10-15"].map(
+              (dStr) => (
+                <Pressable
+                  key={dStr}
+                  onPress={() => {
+                    form.setValue("openedOn", dStr, { shouldDirty: true });
+                    setRecordedDateModalOpen(false);
+                  }}
                   style={[
-                    styles.modalItemText,
-                    {
-                      color: selectedRecordedDate === dStr ? "#0F6E56" : colors.ink,
-                      fontWeight: selectedRecordedDate === dStr ? "700" : "500",
+                    styles.modalItemRow,
+                    selectedRecordedDate === dStr && {
+                      backgroundColor: isDark ? "#172E24" : "#EBF5F0",
                     },
                   ]}
                 >
-                  {formatDateDisplay(dStr)}
-                </Text>
-              </Pressable>
-            ))}
+                  <Text
+                    style={[
+                      styles.modalItemText,
+                      {
+                        color:
+                          selectedRecordedDate === dStr
+                            ? "#0F6E56"
+                            : colors.ink,
+                        fontWeight:
+                          selectedRecordedDate === dStr ? "700" : "500",
+                      },
+                    ]}
+                  >
+                    {formatDateDisplay(dStr)}
+                  </Text>
+                </Pressable>
+              ),
+            )}
           </View>
         </Pressable>
       </Modal>
@@ -807,33 +870,36 @@ export function DebtForm({
               </Pressable>
             </View>
 
-            {["2026-11-15", "2026-11-30", "2026-12-20", "2027-01-15"].map((dStr) => (
-              <Pressable
-                key={dStr}
-                onPress={() => {
-                  form.setValue("dueOn", dStr, { shouldDirty: true });
-                  setDueDateModalOpen(false);
-                }}
-                style={[
-                  styles.modalItemRow,
-                  selectedDueDate === dStr && {
-                    backgroundColor: isDark ? "#172E24" : "#EBF5F0",
-                  },
-                ]}
-              >
-                <Text
+            {["2026-11-15", "2026-11-30", "2026-12-20", "2027-01-15"].map(
+              (dStr) => (
+                <Pressable
+                  key={dStr}
+                  onPress={() => {
+                    form.setValue("dueOn", dStr, { shouldDirty: true });
+                    setDueDateModalOpen(false);
+                  }}
                   style={[
-                    styles.modalItemText,
-                    {
-                      color: selectedDueDate === dStr ? "#0F6E56" : colors.ink,
-                      fontWeight: selectedDueDate === dStr ? "700" : "500",
+                    styles.modalItemRow,
+                    selectedDueDate === dStr && {
+                      backgroundColor: isDark ? "#172E24" : "#EBF5F0",
                     },
                   ]}
                 >
-                  {formatDateDisplay(dStr)}
-                </Text>
-              </Pressable>
-            ))}
+                  <Text
+                    style={[
+                      styles.modalItemText,
+                      {
+                        color:
+                          selectedDueDate === dStr ? "#0F6E56" : colors.ink,
+                        fontWeight: selectedDueDate === dStr ? "700" : "500",
+                      },
+                    ]}
+                  >
+                    {formatDateDisplay(dStr)}
+                  </Text>
+                </Pressable>
+              ),
+            )}
           </View>
         </Pressable>
       </Modal>

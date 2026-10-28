@@ -1,4 +1,6 @@
 import createClient from "openapi-fetch";
+import { purgeDeviceState } from "../privacy/device-events";
+import { purgeDownloads } from "../audio/downloads";
 import { QueryClient } from "@tanstack/react-query";
 import type { paths } from "./schema";
 import { ApiError } from "./errors";
@@ -101,12 +103,19 @@ export const sessions = new SessionManager(
   async () => {
     queryClient.clear();
     clearDestination();
-    await Promise.allSettled([
+    const results = await Promise.allSettled([
+      purgeDeviceState(),
       clearSnapshots(),
       clearReminders(),
       clearExportFiles(),
+      purgeDownloads(),
     ]);
     notifyClear();
+    if (results.some((r) => r.status === "rejected"))
+      throw new ApiError(
+        "PURGE_INCOMPLETE",
+        "Signed out. Some device files could not be removed; retry device cleanup before sharing this device.",
+      );
   },
 );
 async function authenticatedFetch(input: Request) {

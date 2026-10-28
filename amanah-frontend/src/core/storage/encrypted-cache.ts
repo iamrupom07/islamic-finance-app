@@ -62,19 +62,24 @@ function serialized<T>(work: () => Promise<T>) {
   operations = next;
   return next;
 }
+export function snapshotsAvailable() {
+  const epoch = generation;
+  return serialized(async () => epoch === generation && !!(await open()));
+}
 export function saveSnapshot(userId: string, key: string, payload: unknown) {
   const epoch = generation;
   return serialized(async () => {
-    if (epoch !== generation) return;
+    if (epoch !== generation) return false;
     const db = await open();
-    if (db && epoch === generation)
-      await db.runAsync(
-        "INSERT OR REPLACE INTO snapshots (user_id,cache_key,payload,captured_at) VALUES (?,?,?,?)",
-        userId,
-        key,
-        JSON.stringify({ sourceVersion: 1, payload }),
-        new Date().toISOString(),
-      );
+    if (!db || epoch !== generation) return false;
+    await db.runAsync(
+      "INSERT OR REPLACE INTO snapshots (user_id,cache_key,payload,captured_at) VALUES (?,?,?,?)",
+      userId,
+      key,
+      JSON.stringify({ sourceVersion: 1, payload }),
+      new Date().toISOString(),
+    );
+    return true;
   });
 }
 export function readSnapshot<T>(

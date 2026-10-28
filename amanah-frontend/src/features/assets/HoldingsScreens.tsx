@@ -8,7 +8,10 @@ import {
   Modal,
   useWindowDimensions,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import * as Crypto from "expo-crypto";
@@ -55,161 +58,33 @@ import {
 } from "./AssetIcons";
 import { AssetForm } from "./AssetForm";
 import { DebtForm } from "../debts/DebtForm";
-
-const SAMPLE_ASSETS = [
-  {
-    id: "sample-cash",
-    type: "CASH" as const,
-    label: "Cash",
-    currency: "BDT" as const,
-    valuationMode: "MANUAL" as const,
-    declaredValue: "120000.00",
-    weightGrams: null,
-    purity: null,
-    valuedOn: "2026-10-22",
-    version: 1,
-    createdAt: "2026-10-22T10:00:00Z",
-    updatedAt: "2026-10-22T10:00:00Z",
-  },
-  {
-    id: "sample-savings",
-    type: "SAVINGS" as const,
-    label: "Savings",
-    currency: "BDT" as const,
-    valuationMode: "MANUAL" as const,
-    declaredValue: "180000.00",
-    weightGrams: null,
-    purity: null,
-    valuedOn: "2026-10-25",
-    version: 1,
-    createdAt: "2026-10-25T10:00:00Z",
-    updatedAt: "2026-10-25T10:00:00Z",
-  },
-  {
-    id: "sample-gold",
-    type: "GOLD" as const,
-    label: "Gold",
-    currency: "BDT" as const,
-    valuationMode: "METAL_RATE" as const,
-    declaredValue: "240000.00",
-    weightGrams: "20",
-    purity: "0.916667",
-    valuedOn: "2026-10-20",
-    version: 1,
-    createdAt: "2026-10-20T10:00:00Z",
-    updatedAt: "2026-10-20T10:00:00Z",
-  },
-  {
-    id: "sample-investments",
-    type: "INVESTMENT" as const,
-    label: "Investments",
-    currency: "BDT" as const,
-    valuationMode: "MANUAL" as const,
-    declaredValue: "80000.00",
-    weightGrams: null,
-    purity: null,
-    valuedOn: "2026-10-18",
-    version: 1,
-    createdAt: "2026-10-18T10:00:00Z",
-    updatedAt: "2026-10-18T10:00:00Z",
-  },
-  {
-    id: "sample-business",
-    type: "BUSINESS_INVENTORY" as const,
-    label: "Business inventory",
-    currency: "BDT" as const,
-    valuationMode: "MANUAL" as const,
-    declaredValue: "40000.00",
-    weightGrams: null,
-    purity: null,
-    valuedOn: "2026-10-15",
-    version: 1,
-    createdAt: "2026-10-15T10:00:00Z",
-    updatedAt: "2026-10-15T10:00:00Z",
-  },
-];
+import { metalPreview } from "../finance/value-tools";
 
 type DebtRecord = import("../../core/api/types").Debt & {
   contact?: string;
   note?: string;
 };
 
-const SAMPLE_DEBTS: DebtRecord[] = [
-  {
-    id: "sample-debt-1",
-    label: "Personal loan",
-    direction: "I_OWE",
-    originalAmount: "40000.00",
-    remainingAmount: "40000.00",
-    currency: "BDT",
-    openedOn: "2026-10-15",
-    dueOn: "2026-11-15",
-    recoverability: "RECOVERABLE",
-    status: "OPEN",
-    settledAt: null,
-    contact: "Personal contact",
-    note: "Short-term personal loan",
-    version: 1,
-    createdAt: "2026-10-15T10:00:00Z",
-    updatedAt: "2026-10-15T10:00:00Z",
-  },
-  {
-    id: "sample-debt-2",
-    label: "Family loan",
-    direction: "I_OWE",
-    originalAmount: "20000.00",
-    remainingAmount: "20000.00",
-    currency: "BDT",
-    openedOn: "2026-10-26",
-    dueOn: "2026-12-20",
-    recoverability: "RECOVERABLE",
-    status: "OPEN",
-    settledAt: null,
-    contact: "Family member",
-    note: "Borrowed for family expense",
-    version: 1,
-    createdAt: "2026-10-26T10:00:00Z",
-    updatedAt: "2026-10-26T10:00:00Z",
-  },
-  {
-    id: "sample-debt-3",
-    label: "Colleague loan",
-    direction: "OWED_TO_ME",
-    originalAmount: "12000.00",
-    remainingAmount: "12000.00",
-    currency: "BDT",
-    openedOn: "2026-10-10",
-    dueOn: "2026-11-30",
-    recoverability: "RECOVERABLE",
-    status: "OPEN",
-    settledAt: null,
-    contact: "Colleague",
-    note: "Emergency personal help",
-    version: 1,
-    createdAt: "2026-10-10T10:00:00Z",
-    updatedAt: "2026-10-10T10:00:00Z",
-  },
-];
-
 function formatDueShort(dateStr?: string | null): string {
   if (!dateStr) return "No due date";
   try {
     const parts = dateStr.split("-");
     if (parts.length === 3) {
-      const monthShort = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ][parseInt(parts[1]!, 10) - 1] ?? "Dec";
+      const monthShort =
+        [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ][parseInt(parts[1]!, 10) - 1] ?? "Dec";
       const day = parseInt(parts[2]!, 10);
       return `Due ${day} ${monthShort}`;
     }
@@ -297,25 +172,26 @@ const ASSET_TYPE_CONFIG: Record<
 };
 
 function formatAssetDate(dateStr?: string | null): string {
-  if (!dateStr) return "26 Oct 2026";
+  if (!dateStr) return "—";
   try {
     const parts = dateStr.split("-");
     if (parts.length === 3) {
       const year = parts[0];
-      const monthShort = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ][parseInt(parts[1]!, 10) - 1] ?? "Oct";
+      const monthShort =
+        [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ][parseInt(parts[1]!, 10) - 1] ?? "Oct";
       const day = parseInt(parts[2]!, 10);
       return `${day} ${monthShort} ${year}`;
     }
@@ -329,21 +205,18 @@ function formatAssetMoney(
   value: string | number | null | undefined,
   currency = "BDT",
 ): string {
-  if (value == null) return "৳0";
+  if (value == null) return "৳0.00";
   const num = typeof value === "number" ? value : parseFloat(value);
-  if (isNaN(num)) return `৳${value}`;
-  const isWhole = Number.isInteger(num);
-  const parts = (isWhole ? Math.round(num).toString() : num.toFixed(2)).split(".");
+  if (isNaN(num)) return `৳0.00`;
+  const parts = num.toFixed(2).split(".");
   const integer = parts[0]!.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  const formatted =
-    parts.length > 1 && parts[1] !== "00" ? `${integer}.${parts[1]}` : integer;
   const sym =
     currency === "BDT" ? "৳" : currency === "USD" ? "$" : `${currency} `;
-  return `${sym}${formatted}`;
+  return `${sym}${integer}.${parts[1]}`;
 }
 
 export function AssetsScreen() {
-  const { user } = useAuth();
+  const { user, account } = useAuth();
   const router = useRouter();
   const { colors, dark: isDark, locale } = useTheme();
   const insets = useSafeAreaInsets();
@@ -366,15 +239,39 @@ export function AssetsScreen() {
   });
 
   const queryItems = q.data?.pages.flatMap((p) => p.items) ?? [];
-  const items = queryItems.length > 0 ? queryItems : SAMPLE_ASSETS;
+  const items = queryItems;
+
+  const displayCurrency =
+    items[0]?.currency ?? account?.preferences?.currency ?? "BDT";
+
+  const marketQuery = useAccountQuery(
+    ["market", displayCurrency],
+    async () =>
+      dataOf(
+        await api.GET("/v1/market/daily", {
+          params: { query: { currency: displayCurrency } },
+        }),
+      ),
+    true,
+  );
 
   // Calculate total recorded assets
   const totalAmount = items.reduce((sum, item) => {
+    if (item.valuationMode === "METAL_RATE") {
+      const rate =
+        item.type === "GOLD"
+          ? marketQuery.data?.goldPerGram
+          : marketQuery.data?.silverPerGram;
+      if (rate && item.weightGrams && item.purity) {
+        const val = metalPreview(item.weightGrams, "g", item.purity, rate);
+        return sum + (val ? parseFloat(val) : 0);
+      }
+      return sum;
+    }
     const val = parseFloat(item.declaredValue ?? "0");
     return sum + (isNaN(val) ? 0 : val);
   }, 0);
 
-  const displayCurrency = items[0]?.currency ?? "BDT";
   const formattedTotal = formatAssetMoney(totalAmount, displayCurrency);
 
   return (
@@ -478,7 +375,9 @@ export function AssetsScreen() {
                 { color: isDark ? "#A3D4B6" : "#4B6358" },
               ]}
             >
-              Last updated: 26 Oct 2026, 09:10 AM
+              {items[0]?.valuedOn
+                ? `Last updated: ${formatAssetDate(items[0].valuedOn)}`
+                : "No holdings recorded"}
             </Text>
           </View>
 
@@ -501,85 +400,142 @@ export function AssetsScreen() {
         </Text>
 
         {/* List of Asset Cards */}
-        <View style={isWide ? { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" } : undefined}>
-        {items.map((asset) => {
-          const config =
-            ASSET_TYPE_CONFIG[asset.type] ?? ASSET_TYPE_CONFIG.CASH!;
-          const assetTitle = asset.label || config.title;
-          const assetMoney = formatAssetMoney(
-            asset.declaredValue,
-            asset.currency,
-          );
-          const assetUpdated = `Updated: ${formatAssetDate(asset.valuedOn)}`;
-
-          return (
-            <Pressable
-              key={asset.id}
-              accessibilityRole="button"
-              accessibilityLabel={`${assetTitle}, ${assetMoney}`}
-              onPress={() => router.push(`/assets/${asset.id}`)}
-              style={({ pressed }) => [
-                assetStyles.assetCard,
-                isWide && { width: "48.8%" },
-                {
-                  backgroundColor: isDark ? colors.surface : "#FFFFFF",
-                  borderColor: isDark ? colors.border : "#F1F5F9",
-                  opacity: pressed ? 0.8 : 1,
-                },
-              ]}
+        {items.length === 0 ? (
+          <View style={{ paddingVertical: 32, alignItems: "center" }}>
+            <Text
+              style={{
+                color: isDark ? "#94A3B8" : "#64748B",
+                fontSize: 15,
+                marginBottom: 16,
+              }}
             >
-              <View
-                style={[
-                  assetStyles.assetIconBadge,
-                  {
-                    backgroundColor: isDark ? "#283832" : config.bg,
-                  },
-                ]}
-              >
-                <config.Icon size={22} color={config.color} strokeWidth={2} />
-              </View>
+              No holdings recorded yet.
+            </Text>
+            <Button
+              label="Add holding"
+              onPress={() => router.push("/assets/new")}
+            />
+          </View>
+        ) : (
+          <View
+            style={
+              isWide
+                ? {
+                    flexDirection: "row",
+                    flexWrap: "wrap",
+                    justifyContent: "space-between",
+                  }
+                : undefined
+            }
+          >
+            {items.map((asset) => {
+              const config =
+                ASSET_TYPE_CONFIG[asset.type] ?? ASSET_TYPE_CONFIG.CASH!;
+              const assetTitle = asset.label || config.title;
+              let assetMoney = formatAssetMoney(
+                asset.declaredValue,
+                asset.currency,
+              );
+              let assetUpdated = `Updated: ${formatAssetDate(asset.valuedOn)}`;
 
-              <View style={assetStyles.assetInfoCol}>
-                <Text
-                  style={[
-                    assetStyles.assetNameText,
-                    {
-                      color: colors.ink,
-                      fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium",
-                    },
-                  ]}
-                >
-                  {assetTitle}
-                </Text>
-                <Text
-                  style={[
-                    assetStyles.assetValueText,
-                    {
-                      color: colors.ink,
-                      fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium",
-                    },
-                  ]}
-                >
-                  {assetMoney}
-                </Text>
-                <Text
-                  style={[
-                    assetStyles.assetUpdatedText,
-                    {
-                      color: isDark ? colors.muted : "#6B7280",
-                      fontFamily: locale === "bn" ? "Bengali" : "Outfit",
-                    },
-                  ]}
-                >
-                  {assetUpdated}
-                </Text>
-              </View>
+              if (asset.valuationMode === "METAL_RATE") {
+                const rate =
+                  asset.type === "GOLD"
+                    ? marketQuery.data?.goldPerGram
+                    : marketQuery.data?.silverPerGram;
+                const qtyStr = asset.weightQuantity
+                  ? `${asset.weightQuantity} ${asset.weightUnit}`
+                  : `${asset.weightGrams}g`;
+                const purityPct = asset.purity
+                  ? `${Math.round(parseFloat(asset.purity) * 100)}%`
+                  : "Pure";
+                if (rate && asset.weightGrams && asset.purity) {
+                  const val = metalPreview(
+                    asset.weightGrams,
+                    "g",
+                    asset.purity,
+                    rate,
+                  );
+                  if (val) assetMoney = formatAssetMoney(val, asset.currency);
+                }
+                assetUpdated = `${qtyStr} (${purityPct}) · ${formatAssetDate(asset.valuedOn)}`;
+              }
 
-              <ChevronRight size={18} color="#94A3B8" strokeWidth={2} />
-            </Pressable>
-          );
-        })}
-        </View>
+              return (
+                <Pressable
+                  key={asset.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${assetTitle}, ${assetMoney}`}
+                  onPress={() => router.push(`/assets/${asset.id}`)}
+                  style={({ pressed }) => [
+                    assetStyles.assetCard,
+                    isWide && { width: "48.8%" },
+                    {
+                      backgroundColor: isDark ? colors.surface : "#FFFFFF",
+                      borderColor: isDark ? colors.border : "#F1F5F9",
+                      opacity: pressed ? 0.8 : 1,
+                    },
+                  ]}
+                >
+                  <View
+                    style={[
+                      assetStyles.assetIconBadge,
+                      {
+                        backgroundColor: isDark ? "#283832" : config.bg,
+                      },
+                    ]}
+                  >
+                    <config.Icon
+                      size={22}
+                      color={config.color}
+                      strokeWidth={2}
+                    />
+                  </View>
+
+                  <View style={assetStyles.assetInfoCol}>
+                    <Text
+                      style={[
+                        assetStyles.assetNameText,
+                        {
+                          color: colors.ink,
+                          fontFamily:
+                            locale === "bn" ? "Bengali" : "OutfitMedium",
+                        },
+                      ]}
+                    >
+                      {assetTitle}
+                    </Text>
+                    <Text
+                      style={[
+                        assetStyles.assetValueText,
+                        {
+                          color: colors.ink,
+                          fontFamily:
+                            locale === "bn" ? "Bengali" : "OutfitMedium",
+                        },
+                      ]}
+                    >
+                      {assetMoney}
+                    </Text>
+                    <Text
+                      style={[
+                        assetStyles.assetUpdatedText,
+                        {
+                          color: isDark ? colors.muted : "#6B7280",
+                          fontFamily: locale === "bn" ? "Bengali" : "Outfit",
+                        },
+                      ]}
+                    >
+                      {assetUpdated}
+                    </Text>
+                  </View>
+
+                  <ChevronRight size={18} color="#94A3B8" strokeWidth={2} />
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
 
         {/* Bottom Add Asset Button */}
         <Pressable
@@ -637,8 +593,9 @@ export function DebtsScreen() {
     enabled: !!user?.id,
   });
 
-  const queryItems = (q.data?.pages.flatMap((p) => p.items) ?? []) as DebtRecord[];
-  const allDebts = queryItems.length > 0 ? queryItems : SAMPLE_DEBTS;
+  const queryItems = (q.data?.pages.flatMap((p) => p.items) ??
+    []) as DebtRecord[];
+  const allDebts = queryItems;
 
   const iOweTotal = allDebts
     .filter((d) => d.direction === "I_OWE" && d.status !== "SETTLED")
@@ -663,7 +620,9 @@ export function DebtsScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Back"
-          onPress={() => router.back()}
+          onPress={() =>
+            router.canGoBack() ? router.back() : router.replace("/home")
+          }
           style={({ pressed }) => [
             debtStyles.circleButton,
             {
@@ -776,20 +735,38 @@ export function DebtsScreen() {
               debtStyles.summaryCard,
               {
                 backgroundColor: isDark ? colors.surface : "#FFFFFF",
-                borderColor: direction === "I_OWE" ? "#0F6E56" : isDark ? colors.border : "#F1F5F9",
+                borderColor:
+                  direction === "I_OWE"
+                    ? "#0F6E56"
+                    : isDark
+                      ? colors.border
+                      : "#F1F5F9",
               },
             ]}
           >
-            <View style={[debtStyles.summaryIconBadge, { backgroundColor: isDark ? "#172E24" : "#EBF5F0" }]}>
+            <View
+              style={[
+                debtStyles.summaryIconBadge,
+                { backgroundColor: isDark ? "#172E24" : "#EBF5F0" },
+              ]}
+            >
               <Wallet size={20} color="#0F6E56" strokeWidth={2} />
             </View>
-            <Text style={[debtStyles.summaryLabel, { color: isDark ? "#94A3B8" : "#64748B" }]}>
+            <Text
+              style={[
+                debtStyles.summaryLabel,
+                { color: isDark ? "#94A3B8" : "#64748B" },
+              ]}
+            >
               I owe
             </Text>
             <Text
               style={[
                 debtStyles.summaryAmount,
-                { color: colors.ink, fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium" },
+                {
+                  color: colors.ink,
+                  fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium",
+                },
               ]}
             >
               {formatAssetMoney(iOweTotal, "BDT")}
@@ -803,20 +780,38 @@ export function DebtsScreen() {
               debtStyles.summaryCard,
               {
                 backgroundColor: isDark ? colors.surface : "#FFFFFF",
-                borderColor: direction === "OWED_TO_ME" ? "#2563EB" : isDark ? colors.border : "#F1F5F9",
+                borderColor:
+                  direction === "OWED_TO_ME"
+                    ? "#2563EB"
+                    : isDark
+                      ? colors.border
+                      : "#F1F5F9",
               },
             ]}
           >
-            <View style={[debtStyles.summaryIconBadge, { backgroundColor: isDark ? "#1E2A4A" : "#EBF5FF" }]}>
+            <View
+              style={[
+                debtStyles.summaryIconBadge,
+                { backgroundColor: isDark ? "#1E2A4A" : "#EBF5FF" },
+              ]}
+            >
               <Users size={20} color="#2563EB" strokeWidth={2} />
             </View>
-            <Text style={[debtStyles.summaryLabel, { color: isDark ? "#94A3B8" : "#64748B" }]}>
+            <Text
+              style={[
+                debtStyles.summaryLabel,
+                { color: isDark ? "#94A3B8" : "#64748B" },
+              ]}
+            >
               Owed to me
             </Text>
             <Text
               style={[
                 debtStyles.summaryAmount,
-                { color: colors.ink, fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium" },
+                {
+                  color: colors.ink,
+                  fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium",
+                },
               ]}
             >
               {formatAssetMoney(owedToMeTotal, "BDT")}
@@ -838,93 +833,145 @@ export function DebtsScreen() {
         </Text>
 
         {/* List of Debt Cards */}
-        <View style={isWide ? { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" } : undefined}>
-        {filteredItems.map((d) => {
-          const isFamily = d.label.toLowerCase().includes("family") || (d.contact && d.contact.toLowerCase().includes("family"));
-          const iconBg = isDark
-            ? isFamily ? "#2D2619" : "#172E24"
-            : isFamily ? "#FEF3C7" : "#EBF5F0";
-          const iconColor = isFamily ? "#D97706" : "#0F6E56";
-          const IconComp = isFamily ? Users : User;
-          const isSettled = d.status === "SETTLED";
-
-          return (
-            <Pressable
-              key={d.id}
-              accessibilityRole="button"
-              accessibilityLabel={`${d.label}, ${formatAssetMoney(d.remainingAmount, d.currency)}`}
-              onPress={() => router.push(`/debts/${d.id}`)}
-              style={({ pressed }) => [
-                debtStyles.debtCard,
-                isWide && { width: "48.8%" },
-                {
-                  backgroundColor: isDark ? colors.surface : "#FFFFFF",
-                  borderColor: isDark ? colors.border : "#F1F5F9",
-                  opacity: pressed ? 0.8 : 1,
-                },
-              ]}
+        {filteredItems.length === 0 ? (
+          <View style={{ paddingVertical: 32, alignItems: "center" }}>
+            <Text
+              style={{
+                color: isDark ? "#94A3B8" : "#64748B",
+                fontSize: 15,
+                marginBottom: 16,
+              }}
             >
-              <View style={[debtStyles.debtIconBadge, { backgroundColor: iconBg }]}>
-                <IconComp size={22} color={iconColor} strokeWidth={2} />
-              </View>
+              No debts recorded yet.
+            </Text>
+            <Button
+              label="Add debt"
+              onPress={() => router.push("/debts/new")}
+            />
+          </View>
+        ) : (
+          <View
+            style={
+              isWide
+                ? {
+                    flexDirection: "row",
+                    flexWrap: "wrap",
+                    justifyContent: "space-between",
+                  }
+                : undefined
+            }
+          >
+            {filteredItems.map((d) => {
+              const isFamily =
+                d.label.toLowerCase().includes("family") ||
+                (d.contact && d.contact.toLowerCase().includes("family"));
+              const iconBg = isDark
+                ? isFamily
+                  ? "#2D2619"
+                  : "#172E24"
+                : isFamily
+                  ? "#FEF3C7"
+                  : "#EBF5F0";
+              const iconColor = isFamily ? "#D97706" : "#0F6E56";
+              const IconComp = isFamily ? Users : User;
+              const isSettled = d.status === "SETTLED";
 
-              <View style={debtStyles.debtInfoCol}>
-                <Text
-                  style={[
-                    debtStyles.debtNameText,
+              return (
+                <Pressable
+                  key={d.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${d.label}, ${formatAssetMoney(d.remainingAmount, d.currency)}`}
+                  onPress={() => router.push(`/debts/${d.id}`)}
+                  style={({ pressed }) => [
+                    debtStyles.debtCard,
+                    isWide && { width: "48.8%" },
                     {
-                      color: colors.ink,
-                      fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium",
+                      backgroundColor: isDark ? colors.surface : "#FFFFFF",
+                      borderColor: isDark ? colors.border : "#F1F5F9",
+                      opacity: pressed ? 0.8 : 1,
                     },
                   ]}
                 >
-                  {d.label}
-                </Text>
-                <Text
-                  style={[
-                    debtStyles.debtAmountText,
-                    {
-                      color: colors.ink,
-                      fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium",
-                    },
-                  ]}
-                >
-                  {formatAssetMoney(d.remainingAmount, d.currency)}
-                </Text>
-                <Text
-                  style={[
-                    debtStyles.debtDueText,
-                    { color: isDark ? "#94A3B8" : "#64748B" },
-                  ]}
-                >
-                  {formatDueShort(d.dueOn)}
-                </Text>
-              </View>
-
-              <View style={debtStyles.debtRightCol}>
-                <View
-                  style={[
-                    debtStyles.statusPill,
-                    isSettled
-                      ? { backgroundColor: "#E1F5EE", borderColor: "#A3D4B6" }
-                      : { backgroundColor: "#F0FDF4", borderColor: "#0F6E56" },
-                  ]}
-                >
-                  <Text
+                  <View
                     style={[
-                      debtStyles.statusPillText,
-                      { color: "#0F6E56" },
+                      debtStyles.debtIconBadge,
+                      { backgroundColor: iconBg },
                     ]}
                   >
-                    {isSettled ? "Settled" : "Open"}
-                  </Text>
-                </View>
-                <ChevronRight size={18} color="#94A3B8" strokeWidth={2} style={{ marginLeft: 8 }} />
-              </View>
-            </Pressable>
-          );
-        })}
-        </View>
+                    <IconComp size={22} color={iconColor} strokeWidth={2} />
+                  </View>
+
+                  <View style={debtStyles.debtInfoCol}>
+                    <Text
+                      style={[
+                        debtStyles.debtNameText,
+                        {
+                          color: colors.ink,
+                          fontFamily:
+                            locale === "bn" ? "Bengali" : "OutfitMedium",
+                        },
+                      ]}
+                    >
+                      {d.label}
+                    </Text>
+                    <Text
+                      style={[
+                        debtStyles.debtAmountText,
+                        {
+                          color: colors.ink,
+                          fontFamily:
+                            locale === "bn" ? "Bengali" : "OutfitMedium",
+                        },
+                      ]}
+                    >
+                      {formatAssetMoney(d.remainingAmount, d.currency)}
+                    </Text>
+                    <Text
+                      style={[
+                        debtStyles.debtDueText,
+                        { color: isDark ? "#94A3B8" : "#64748B" },
+                      ]}
+                    >
+                      {formatDueShort(d.dueOn)}
+                    </Text>
+                  </View>
+
+                  <View style={debtStyles.debtRightCol}>
+                    <View
+                      style={[
+                        debtStyles.statusPill,
+                        isSettled
+                          ? {
+                              backgroundColor: "#E1F5EE",
+                              borderColor: "#A3D4B6",
+                            }
+                          : {
+                              backgroundColor: "#F0FDF4",
+                              borderColor: "#0F6E56",
+                            },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          debtStyles.statusPillText,
+                          { color: "#0F6E56" },
+                        ]}
+                      >
+                        {isSettled ? "Settled" : "Open"}
+                      </Text>
+                    </View>
+                    <ChevronRight
+                      size={18}
+                      color="#94A3B8"
+                      strokeWidth={2}
+                      style={{ marginLeft: 8 }}
+                    />
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
 
         {/* Add Debt Button */}
         <Pressable
@@ -936,7 +983,12 @@ export function DebtsScreen() {
             { opacity: pressed ? 0.85 : 1 },
           ]}
         >
-          <PlusCircle size={20} color="#FFFFFF" strokeWidth={2.2} style={{ marginRight: 8 }} />
+          <PlusCircle
+            size={20}
+            color="#FFFFFF"
+            strokeWidth={2.2}
+            style={{ marginRight: 8 }}
+          />
           <Text
             style={[
               debtStyles.primaryAddButtonText,
@@ -959,27 +1011,25 @@ export function AssetDetailScreen() {
   );
   const [confirm, setConfirm] = useState(false);
   const [key] = useState(Crypto.randomUUID);
-  const sampleAsset = SAMPLE_ASSETS.find((a) => a.id === id);
-  const q = useAccountQuery(["asset", id], async () => {
-    if (id?.startsWith("sample-") && sampleAsset) {
-      return sampleAsset;
-    }
-    try {
-      return dataOf(
-        await api.GET("/v1/assets/{id}", { params: { path: { id: id! } } }),
-      );
-    } catch (e) {
-      if (sampleAsset) return sampleAsset;
-      throw e;
-    }
-  });
+  const q = useAccountQuery(["asset", id], async () =>
+    dataOf(await api.GET("/v1/assets/{id}", { params: { path: { id: id! } } })),
+  );
+  const detailCurrency = q.data?.currency ?? "BDT";
+  const marketDetail = useAccountQuery(
+    ["market", detailCurrency],
+    async () =>
+      dataOf(
+        await api.GET("/v1/market/daily", {
+          params: { query: { currency: detailCurrency } },
+        }),
+      ),
+    !!q.data?.currency,
+  );
   const remove = useAccountMutation(async () => {
-    if (!id?.startsWith("sample-")) {
-      await api.DELETE("/v1/assets/{id}", {
-        params: { path: { id }, header: { "idempotency-key": key } },
-        body: { version: q.data!.version },
-      });
-    }
+    await api.DELETE("/v1/assets/{id}", {
+      params: { path: { id: id! }, header: { "idempotency-key": key } },
+      body: { version: q.data!.version },
+    });
     toast("Deleted");
     router.replace("/assets");
   });
@@ -1009,7 +1059,30 @@ export function AssetDetailScreen() {
                   currency={q.data.currency}
                 />
               ) : (
-                <Copy>{`${q.data.weightGrams} g · purity ${q.data.purity}`}</Copy>
+                <View style={{ gap: 4 }}>
+                  <Money
+                    value={
+                      (q.data.type === "GOLD"
+                        ? marketDetail.data?.goldPerGram
+                        : marketDetail.data?.silverPerGram) &&
+                      q.data.weightGrams &&
+                      q.data.purity
+                        ? metalPreview(
+                            q.data.weightGrams,
+                            "g",
+                            q.data.purity,
+                            (q.data.type === "GOLD"
+                              ? marketDetail.data?.goldPerGram
+                              : marketDetail.data?.silverPerGram) ?? null,
+                          )
+                        : null
+                    }
+                    currency={q.data.currency}
+                  />
+                  <Copy
+                    muted
+                  >{`${q.data.weightQuantity ? `${q.data.weightQuantity} ${q.data.weightUnit} (${q.data.weightGrams}g)` : `${q.data.weightGrams} g`} · purity ${q.data.purity}`}</Copy>
+                </View>
               )}
               <Copy muted>{q.data.valuedOn}</Copy>
               <ActionRow
@@ -1045,37 +1118,27 @@ export function DebtDetailScreen() {
   const toast = useToast();
   const { colors, dark: isDark, locale } = useTheme();
   const insets = useSafeAreaInsets();
-  const [edit, setEdit] = useState<import("../../core/api/types").Debt | null>(null);
+  const [edit, setEdit] = useState<import("../../core/api/types").Debt | null>(
+    null,
+  );
   const [action, setAction] = useState<"delete" | "settle" | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [key] = useState(Crypto.randomUUID);
 
-  const sampleDebt = SAMPLE_DEBTS.find((d) => d.id === id);
-
-  const q = useAccountQuery(["debt", id], async () => {
-    if (id?.startsWith("sample-") && sampleDebt) {
-      return sampleDebt;
-    }
-    try {
-      return dataOf(await api.GET("/v1/debts/{id}", { params: { path: { id: id! } } }));
-    } catch (e) {
-      if (sampleDebt) return sampleDebt;
-      throw e;
-    }
-  });
+  const q = useAccountQuery(["debt", id], async () =>
+    dataOf(await api.GET("/v1/debts/{id}", { params: { path: { id: id! } } })),
+  );
 
   const change = useAccountMutation(async () => {
-    if (!id?.startsWith("sample-")) {
-      const params = {
-        path: { id: id! },
-        header: { "idempotency-key": key + action },
-      };
-      const body = { version: q.data!.version };
-      if (action === "settle") {
-        await api.PATCH("/v1/debts/{id}/settle", { params, body });
-      } else {
-        await api.DELETE("/v1/debts/{id}", { params, body });
-      }
+    const params = {
+      path: { id: id! },
+      header: { "idempotency-key": key + action },
+    };
+    const body = { version: q.data!.version };
+    if (action === "settle") {
+      await api.PATCH("/v1/debts/{id}/settle", { params, body });
+    } else {
+      await api.DELETE("/v1/debts/{id}", { params, body });
     }
     toast(action === "settle" ? "Marked as settled" : "Deleted");
     setAction(null);
@@ -1100,13 +1163,33 @@ export function DebtDetailScreen() {
     );
   }
 
-  const d = (q.data ?? sampleDebt ?? SAMPLE_DEBTS[1]) as DebtRecord;
-  const isSettled = d?.status === "SETTLED";
-  const contactName = d?.contact || d?.label || "Family member";
-  const formattedAmount = formatAssetMoney(d?.remainingAmount || d?.originalAmount, d?.currency);
-  const recordedDateStr = formatDetailDate(d?.openedOn);
-  const dueDateStr = formatDetailDate(d?.dueOn);
-  const noteStr = d?.note || "Borrowed for family expense";
+  if (!q.data) {
+    return (
+      <Screen title="Debt" back>
+        <QueryState query={q}>{null}</QueryState>
+      </Screen>
+    );
+  }
+
+  const d = q.data as DebtRecord;
+  const isSettled = d.status === "SETTLED";
+  const contactName = d.contact || d.label;
+  const formattedAmount = formatAssetMoney(
+    d.remainingAmount || d.originalAmount,
+    d.currency,
+  );
+  const recordedDateStr = formatDetailDate(d.openedOn);
+  const dueDateStr = formatDetailDate(d.dueOn);
+  const noteStr = d.note || "";
+  const isPastDue =
+    !isSettled && !!d.dueOn && new Date(d.dueOn).getTime() < Date.now();
+  const daysPastDue =
+    isPastDue && d.dueOn
+      ? Math.max(
+          1,
+          Math.floor((Date.now() - new Date(d.dueOn).getTime()) / 86400000),
+        )
+      : 0;
 
   return (
     <SafeAreaView
@@ -1121,7 +1204,9 @@ export function DebtDetailScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Back"
-          onPress={() => router.back()}
+          onPress={() =>
+            router.canGoBack() ? router.back() : router.replace("/home")
+          }
           style={({ pressed }) => [
             debtStyles.circleButton,
             {
@@ -1223,7 +1308,12 @@ export function DebtDetailScreen() {
           ]}
         >
           <View style={debtStyles.tableRow}>
-            <Text style={[debtStyles.tableRowLabel, { color: isDark ? "#94A3B8" : "#64748B" }]}>
+            <Text
+              style={[
+                debtStyles.tableRowLabel,
+                { color: isDark ? "#94A3B8" : "#64748B" },
+              ]}
+            >
               Person or organization
             </Text>
             <Text style={[debtStyles.tableRowValue, { color: colors.ink }]}>
@@ -1231,10 +1321,20 @@ export function DebtDetailScreen() {
             </Text>
           </View>
 
-          <View style={[debtStyles.tableDivider, { backgroundColor: isDark ? colors.border : "#F1F5F9" }]} />
+          <View
+            style={[
+              debtStyles.tableDivider,
+              { backgroundColor: isDark ? colors.border : "#F1F5F9" },
+            ]}
+          />
 
           <View style={debtStyles.tableRow}>
-            <Text style={[debtStyles.tableRowLabel, { color: isDark ? "#94A3B8" : "#64748B" }]}>
+            <Text
+              style={[
+                debtStyles.tableRowLabel,
+                { color: isDark ? "#94A3B8" : "#64748B" },
+              ]}
+            >
               Amount
             </Text>
             <Text style={[debtStyles.tableRowValue, { color: colors.ink }]}>
@@ -1242,10 +1342,20 @@ export function DebtDetailScreen() {
             </Text>
           </View>
 
-          <View style={[debtStyles.tableDivider, { backgroundColor: isDark ? colors.border : "#F1F5F9" }]} />
+          <View
+            style={[
+              debtStyles.tableDivider,
+              { backgroundColor: isDark ? colors.border : "#F1F5F9" },
+            ]}
+          />
 
           <View style={debtStyles.tableRow}>
-            <Text style={[debtStyles.tableRowLabel, { color: isDark ? "#94A3B8" : "#64748B" }]}>
+            <Text
+              style={[
+                debtStyles.tableRowLabel,
+                { color: isDark ? "#94A3B8" : "#64748B" },
+              ]}
+            >
               Recorded date
             </Text>
             <Text style={[debtStyles.tableRowValue, { color: colors.ink }]}>
@@ -1253,10 +1363,20 @@ export function DebtDetailScreen() {
             </Text>
           </View>
 
-          <View style={[debtStyles.tableDivider, { backgroundColor: isDark ? colors.border : "#F1F5F9" }]} />
+          <View
+            style={[
+              debtStyles.tableDivider,
+              { backgroundColor: isDark ? colors.border : "#F1F5F9" },
+            ]}
+          />
 
           <View style={debtStyles.tableRow}>
-            <Text style={[debtStyles.tableRowLabel, { color: isDark ? "#94A3B8" : "#64748B" }]}>
+            <Text
+              style={[
+                debtStyles.tableRowLabel,
+                { color: isDark ? "#94A3B8" : "#64748B" },
+              ]}
+            >
               Expected settlement date
             </Text>
             <Text style={[debtStyles.tableRowValue, { color: colors.ink }]}>
@@ -1264,20 +1384,35 @@ export function DebtDetailScreen() {
             </Text>
           </View>
 
-          <View style={[debtStyles.tableDivider, { backgroundColor: isDark ? colors.border : "#F1F5F9" }]} />
+          <View
+            style={[
+              debtStyles.tableDivider,
+              { backgroundColor: isDark ? colors.border : "#F1F5F9" },
+            ]}
+          />
 
           <View style={debtStyles.tableRow}>
-            <Text style={[debtStyles.tableRowLabel, { color: isDark ? "#94A3B8" : "#64748B" }]}>
+            <Text
+              style={[
+                debtStyles.tableRowLabel,
+                { color: isDark ? "#94A3B8" : "#64748B" },
+              ]}
+            >
               Note
             </Text>
-            <Text style={[debtStyles.tableRowValue, { color: colors.ink, flex: 1, textAlign: "right" }]}>
+            <Text
+              style={[
+                debtStyles.tableRowValue,
+                { color: colors.ink, flex: 1, textAlign: "right" },
+              ]}
+            >
               {noteStr}
             </Text>
           </View>
         </View>
 
         {/* Past Due Warning Card (Image 3) */}
-        {!isSettled ? (
+        {isPastDue ? (
           <View
             style={[
               debtStyles.pastDueCard,
@@ -1287,16 +1422,28 @@ export function DebtDetailScreen() {
               },
             ]}
           >
-            <View style={[debtStyles.pastDueIconCircle, { backgroundColor: isDark ? "#481A1D" : "#FEE2E2" }]}>
+            <View
+              style={[
+                debtStyles.pastDueIconCircle,
+                { backgroundColor: isDark ? "#481A1D" : "#FEE2E2" },
+              ]}
+            >
               <Calendar size={20} color="#EF4444" strokeWidth={2} />
             </View>
 
             <View style={debtStyles.pastDueInfoCol}>
               <Text style={debtStyles.pastDueTitle}>Past due</Text>
-              <Text style={[debtStyles.pastDueSub, { color: isDark ? "#F87171" : "#64748B" }]}>
+              <Text
+                style={[
+                  debtStyles.pastDueSub,
+                  { color: isDark ? "#F87171" : "#64748B" },
+                ]}
+              >
                 Due on {dueDateStr}
               </Text>
-              <Text style={debtStyles.pastDueDays}>6 days past due</Text>
+              <Text style={debtStyles.pastDueDays}>
+                {`${daysPastDue} ${daysPastDue === 1 ? "day past due" : "days past due"}`}
+              </Text>
             </View>
 
             <View style={debtStyles.pastDuePill}>
@@ -1315,7 +1462,12 @@ export function DebtDetailScreen() {
             },
           ]}
         >
-          <Info size={20} color="#0F6E56" strokeWidth={2.2} style={{ marginTop: 2, marginRight: 12 }} />
+          <Info
+            size={20}
+            color="#0F6E56"
+            strokeWidth={2.2}
+            style={{ marginTop: 2, marginRight: 12 }}
+          />
           <View style={{ flex: 1 }}>
             <Text
               style={[
@@ -1331,7 +1483,9 @@ export function DebtDetailScreen() {
                 { color: isDark ? "#C8E6D5" : "#335C4D" },
               ]}
             >
-              Eligible short-term debts may affect your zakat estimate depending on your settings. Amanah provides an estimate, not a religious ruling.
+              Eligible short-term debts may affect your zakat estimate depending
+              on your settings. Amanah provides an estimate, not a religious
+              ruling.
             </Text>
           </View>
         </View>
@@ -1348,7 +1502,12 @@ export function DebtDetailScreen() {
                 { opacity: pressed ? 0.85 : 1 },
               ]}
             >
-              <CheckCircle2 size={20} color="#FFFFFF" strokeWidth={2.2} style={{ marginRight: 8 }} />
+              <CheckCircle2
+                size={20}
+                color="#FFFFFF"
+                strokeWidth={2.2}
+                style={{ marginRight: 8 }}
+              />
               <Text
                 style={[
                   debtStyles.settleButtonText,
@@ -1368,8 +1527,18 @@ export function DebtDetailScreen() {
             </Text>
           </View>
         ) : (
-          <View style={[debtStyles.settledBanner, { backgroundColor: isDark ? "#172E24" : "#E1F5EE" }]}>
-            <CheckCircle2 size={20} color="#0F6E56" strokeWidth={2} style={{ marginRight: 8 }} />
+          <View
+            style={[
+              debtStyles.settledBanner,
+              { backgroundColor: isDark ? "#172E24" : "#E1F5EE" },
+            ]}
+          >
+            <CheckCircle2
+              size={20}
+              color="#0F6E56"
+              strokeWidth={2}
+              style={{ marginRight: 8 }}
+            />
             <Text style={[debtStyles.settledBannerText, { color: "#0F6E56" }]}>
               This debt has been settled.
             </Text>
@@ -1386,7 +1555,12 @@ export function DebtDetailScreen() {
             { opacity: pressed ? 0.7 : 1 },
           ]}
         >
-          <Edit3 size={18} color="#0F6E56" strokeWidth={2} style={{ marginRight: 6 }} />
+          <Edit3
+            size={18}
+            color="#0F6E56"
+            strokeWidth={2}
+            style={{ marginRight: 6 }}
+          />
           <Text
             style={[
               debtStyles.editLinkText,
@@ -1416,7 +1590,9 @@ export function DebtDetailScreen() {
             ]}
           >
             <View style={debtStyles.modalHeaderRow}>
-              <Text style={[debtStyles.modalHeaderTitle, { color: colors.ink }]}>
+              <Text
+                style={[debtStyles.modalHeaderTitle, { color: colors.ink }]}
+              >
                 Debt options
               </Text>
               <Pressable onPress={() => setMenuOpen(false)}>
@@ -1445,8 +1621,14 @@ export function DebtDetailScreen() {
                 }}
                 style={debtStyles.modalOptionItem}
               >
-                <CheckCircle2 size={18} color="#0F6E56" style={{ marginRight: 12 }} />
-                <Text style={[debtStyles.modalOptionText, { color: "#0F6E56" }]}>
+                <CheckCircle2
+                  size={18}
+                  color="#0F6E56"
+                  style={{ marginRight: 12 }}
+                />
+                <Text
+                  style={[debtStyles.modalOptionText, { color: "#0F6E56" }]}
+                >
                   Mark as settled
                 </Text>
               </Pressable>

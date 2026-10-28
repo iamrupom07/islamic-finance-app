@@ -20,7 +20,11 @@
     "api:check": "node scripts/check-contract.mjs",
     "content:verify": "node scripts/verify-content.mjs",
     "release:check": "node scripts/release-check.mjs",
-    "routes:check": "node scripts/check-routes.mjs"
+    "routes:check": "node scripts/check-routes.mjs",
+    "audit:fresh": "node scripts/audit-dependencies.mjs",
+    "release:evidence": "node scripts/release-evidence.mjs",
+    "dependencies:check": "node scripts/dependency-compat.cjs",
+    "i18n:check": "node scripts/check-localization.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
@@ -43,7 +47,7 @@
     "@react-native-google-signin/google-signin": "16.1.5",
     "@tanstack/react-query": "5.104.5",
     "decimal.js": "10.6.0",
-    "expo": "58.0.19",
+    "expo": "58.0.20",
     "expo-apple-authentication": "~58.0.2",
     "expo-clipboard": "~58.0.4",
     "expo-crypto": "~58.0.7",
@@ -69,6 +73,9 @@
     "react-native-screens": "~4.30.0",
     "react-native-svg": "15.16.0",
     "react-native-web": "~0.21.4",
-    "zod": "^4.6.7"
+    "zod": "^4.6.7",
+    "expo-audio": "~58.0.10",
+    "expo-local-authentication": "~58.0.2",
+    "expo-system-ui": "~58.0.6"
   }
 }

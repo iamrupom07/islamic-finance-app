@@ -219,7 +219,7 @@ describe("real PostgreSQL API integration", () => {
           headers: auth(a.accessToken),
         })
       ).statusCode,
-    ).toBe(503);
+    ).toBe(200);
     const rotated = await post("/v1/auth/refresh", {
       refreshToken: b.refreshToken,
     });
@@ -594,7 +594,7 @@ describe("real PostgreSQL API integration", () => {
       "SUCCEEDED",
     ]);
     expect(calls).toBe(1);
-    const failNow = new Date("2026-10-28T07:00:00Z");
+    const failNow = new Date("2026-10-29T07:00:00Z");
     const bad = {
       fetch: async () => {
         throw new Error("private-provider-key-should-never-be-persisted");
@@ -607,7 +607,7 @@ describe("real PostgreSQL API integration", () => {
       where: {
         jobType_period: {
           jobType: "REFRESH_RATES",
-          period: failNow.toISOString().slice(0, 13),
+          period: failNow.toISOString().slice(0, 10),
         },
       },
     });
@@ -615,3 +615,408 @@ describe("real PostgreSQL API integration", () => {
     expect(job.errorClass).toBe("PROVIDER_FAILURE");
   });
 });
+
+it("Phase 1: exact mixed valuations, notes, repayment retries, complete totals, reporting and correction chains", async () => {
+  const a = await register("phase1-" + randomUUID() + "@example.test"),
+    b = await register("phase1-other-" + randomUUID() + "@example.test");
+  const db = system.ctx.db;
+  // Previous tests deliberately published a future fixture; restore a clean quote basis for this independent scenario.
+  await db.rateSet.deleteMany({ where: { quotedAt: { gt: now } } });
+  const rs = await db.rateSet.create({
+    data: {
+      provider: "TEST_FIXTURE",
+      quotedAt: now,
+      hash: randomUUID(),
+      metals: { create: rates.metals },
+      fx: { create: rates.fx },
+    },
+  });
+  const approved = await db.zakatPolicyVersion.create({
+    data: {
+      version: "PHASE1-TEST-" + randomUUID().slice(0, 8),
+      status: "APPROVED",
+      goldGrams: policy.goldGrams,
+      silverGrams: policy.silverGrams,
+      annualRate: policy.annualRate,
+      rules: policy.rules,
+      sourceNotes: "SOFTWARE FIXTURE ONLY",
+      reviewedBy: "SOFTWARE FIXTURE",
+      approvedAt: now,
+    },
+  });
+  const pref = (
+    await system.app.inject({ url: "/v1/me", headers: auth(a.accessToken) })
+  ).json().data.preferences;
+  expect(
+    (
+      await system.app.inject({
+        method: "PATCH",
+        url: "/v1/me/preferences",
+        headers: auth(a.accessToken),
+        payload: {
+          version: pref.version,
+          policyVersionId: approved.id,
+          hijriAnchor: "1447-01-01",
+          continuityConfirmed: true,
+        },
+      })
+    ).statusCode,
+  ).toBe(200);
+  const read = async (url: string, token = a.accessToken) =>
+    system.app.inject({ url, headers: auth(token) });
+  const cash = await post(
+    "/v1/assets",
+    {
+      type: "CASH",
+      label: "Cash",
+      note: "Persistent cash note",
+      currency: "BDT",
+      valuationMode: "MANUAL",
+      declaredValue: "1000",
+      valuedOn: "2026-10-26",
+    },
+    a.accessToken,
+  );
+  expect(cash.statusCode).toBe(200);
+  expect(
+    (await read("/v1/assets/" + cash.json().data.id)).json().data.note,
+  ).toBe("Persistent cash note");
+  expect(
+    (
+      await post(
+        "/v1/assets",
+        {
+          type: "SAVINGS",
+          label: "USD holding",
+          currency: "USD",
+          valuationMode: "MANUAL",
+          declaredValue: "1",
+          valuedOn: "2026-10-26",
+        },
+        a.accessToken,
+      )
+    ).statusCode,
+  ).toBe(200);
+  expect(
+    (
+      await post(
+        "/v1/assets",
+        {
+          type: "GOLD",
+          label: "Pure gold",
+          weightQuantity: "1",
+          weightUnit: "g",
+          currency: "BDT",
+          valuationMode: "METAL_RATE",
+          weightGrams: "1",
+          purity: "1",
+          valuedOn: "2026-10-26",
+        },
+        a.accessToken,
+      )
+    ).statusCode,
+  ).toBe(200);
+  expect(
+    (
+      await post(
+        "/v1/assets",
+        {
+          type: "GOLD",
+          label: "Bad unit",
+          currency: "BDT",
+          valuationMode: "METAL_RATE",
+          weightQuantity: "1",
+          weightUnit: "ozt",
+          weightGrams: "1",
+          purity: "1",
+          valuedOn: "2026-10-26",
+        },
+        a.accessToken,
+      )
+    ).statusCode,
+  ).toBe(422);
+  let h = (await read("/v1/holdings/summary")).json().data;
+  expect(h.status).toBe("AVAILABLE");
+  expect(h.assetsTotal).toBe("11100.00");
+  const market = (await read("/v1/market/daily?currency=BDT")).json().data;
+  expect(market.goldPerGram).toBe("10000.000000000000000000000000");
+  expect(market.silverPerGram).toBe("100.000000000000000000000000");
+  expect(market.goldNisab).toBe("1000000.00");
+  expect(market.silverNisab).toBe("50000.00");
+  const debtResponse = await post(
+    "/v1/debts",
+    {
+      direction: "I_OWE",
+      label: "Partly repaid",
+      note: "Persistent debt note",
+      originalAmount: "1000",
+      remainingAmount: "200",
+      currency: "BDT",
+      openedOn: "2026-10-01",
+      dueOn: "2026-10-26",
+      recoverability: "RECOVERABLE",
+    },
+    a.accessToken,
+  );
+  expect(debtResponse.statusCode).toBe(200);
+  let debt = debtResponse.json().data;
+  const repayKey = randomUUID(),
+    body = {
+      version: debt.version,
+      amount: "50",
+      paidOn: "2026-10-26",
+      note: "Paid externally",
+    };
+  const replies = await Promise.all([
+    post(`/v1/debts/${debt.id}/repayments`, body, a.accessToken, repayKey),
+    post(`/v1/debts/${debt.id}/repayments`, body, a.accessToken, repayKey),
+  ]);
+  expect(replies.map((r) => r.statusCode)).toEqual([200, 200]);
+  debt = replies[0]!.json().data;
+  expect(debt.remainingAmount).toBe("150");
+  const updated = await system.app.inject({
+    method: "PATCH",
+    url: `/v1/debts/${debt.id}`,
+    headers: { ...auth(a.accessToken), "idempotency-key": randomUUID() },
+    payload: { version: debt.version, label: "Renamed only" },
+  });
+  expect(updated.statusCode).toBe(200);
+  expect(updated.json().data.remainingAmount).toBe("150");
+  expect(updated.json().data.note).toBe("Persistent debt note");
+  expect(
+    (await read(`/v1/debts/${debt.id}/events`))
+      .json()
+      .data.filter((e: any) => e.eventType === "REPAYMENT"),
+  ).toHaveLength(1);
+  expect(
+    (await post(`/v1/debts/${debt.id}/repayments`, body, b.accessToken))
+      .statusCode,
+  ).toBe(404);
+  expect(
+    (
+      await post(
+        `/v1/debts/${debt.id}/repayments`,
+        { ...body, version: updated.json().data.version, amount: "151" },
+        a.accessToken,
+      )
+    ).statusCode,
+  ).toBe(422);
+  for (let i = 0; i < 21; i++)
+    expect(
+      (
+        await post(
+          "/v1/assets",
+          {
+            type: "CASH",
+            label: `Page ${i}`,
+            currency: "BDT",
+            valuationMode: "MANUAL",
+            declaredValue: "1",
+            valuedOn: "2026-10-26",
+          },
+          a.accessToken,
+        )
+      ).statusCode,
+    ).toBe(200);
+  const page1 = (await read("/v1/assets?limit=20")).json().data;
+  expect(page1.hasMore).toBe(true);
+  expect(
+    (
+      await read(
+        "/v1/assets?limit=20&cursor=" + encodeURIComponent(page1.nextCursor),
+      )
+    ).json().data.items,
+  ).toHaveLength(4);
+  h = (await read("/v1/holdings/summary")).json().data;
+  expect(h.assetCount).toBe(24);
+  expect(h.assetsTotal).toBe("11121.00");
+  expect(h.iOweTotal).toBe("150.00");
+  const overview = (await read("/v1/finance/overview?month=2026-10")).json()
+    .data;
+  expect(overview.trend).toHaveLength(6);
+  expect(overview.report.income).toBe("0.00");
+  expect(overview.lifetimeSadaqah).toBe("0.00");
+  const year = await db.zakatYear.create({
+    data: {
+      userId: a.user.id,
+      policyVersionId: approved.id,
+      snapshot: (await read("/v1/zakat/summary")).json().data,
+      currency: "BDT",
+      assessedAmount: "100",
+      periodStart: "2025-01-01",
+      periodEnd: "2026-01-01",
+    },
+  });
+  const payment = (
+    await post(
+      "/v1/zakat/payments",
+      {
+        zakatYearId: year.id,
+        amount: "80",
+        currency: "BDT",
+        paidOn: "2026-10-26",
+      },
+      a.accessToken,
+    )
+  ).json().data;
+  const correction = {
+    replacementAmount: "20",
+    reason: "Original entry was wrong",
+    lastCorrectionId: null,
+  };
+  const ck = randomUUID();
+  expect(
+    (
+      await post(
+        `/v1/zakat/payments/${payment.id}/corrections`,
+        correction,
+        a.accessToken,
+        ck,
+      )
+    ).statusCode,
+  ).toBe(200);
+  expect(
+    (
+      await post(
+        `/v1/zakat/payments/${payment.id}/corrections`,
+        correction,
+        a.accessToken,
+        ck,
+      )
+    ).statusCode,
+  ).toBe(200);
+  expect(
+    (
+      await post(
+        `/v1/zakat/payments/${payment.id}/corrections`,
+        correction,
+        a.accessToken,
+      )
+    ).statusCode,
+  ).toBe(409);
+  expect(
+    (
+      await post(
+        `/v1/zakat/payments/${payment.id}/corrections`,
+        correction,
+        b.accessToken,
+      )
+    ).statusCode,
+  ).toBe(404);
+  const original = await db.zakatPaymentRecord.findUniqueOrThrow({
+    where: { id: payment.id },
+  });
+  expect(original.amount.toString()).toBe("80");
+  const corrected = await db.zakatPaymentRecord.findUniqueOrThrow({
+    where: { id: payment.id },
+    include: { corrections: true },
+  });
+  expect(corrected.corrections).toHaveLength(1);
+  expect(corrected.corrections[0]!.replacementAmount.toString()).toBe("20");
+  const history = (await read(`/v1/zakat/history/${year.id}`)).json().data;
+  expect(history.recordedAmount).toBe("20.00");
+  expect(history.remainingAmount).toBe("80.00");
+  expect(history.payments[0].effectiveAmount).toBe("20");
+  const statement = await read(`/v1/zakat/history/${year.id}/statement`);
+  expect(statement.statusCode).toBe(200);
+  expect(statement.headers["cache-control"]).toBe("private, no-store");
+  expect(statement.body).toContain("Amanah assessment statement");
+  expect(statement.body).toContain("correction history");
+  expect(
+    (
+      await system.app.inject({
+        url: `/v1/zakat/history/${year.id}/statement`,
+        headers: auth(b.accessToken),
+      })
+    ).statusCode,
+  ).toBe(404);
+
+  const exported = (await read("/v1/me/export?format=json")).json();
+  expect(exported.zakatPaymentCorrection).toHaveLength(1);
+  expect(
+    exported.asset.find((x: any) => x.id === cash.json().data.id).note,
+  ).toBe("Persistent cash note");
+  await db.rateSet.delete({ where: { id: rs.id } });
+}, 30000);
+
+it("saves edition-aware reading progress, validates exact references, and isolates bookmarks and dua favorites", async () => {
+  const a = await register("reading-" + randomUUID() + "@example.test"),
+    b = await register("other-reading-" + randomUUID() + "@example.test");
+  const catalog = (await system.app.inject({ url: "/v1/catalog" })).json().data;
+  expect(catalog.content.available).toBe(true);
+  const edition = catalog.content.edition;
+  const put = (url: string, payload: Record<string, unknown> | undefined) =>
+    system.app.inject({
+      method: "PUT",
+      url,
+      headers: auth(a.accessToken),
+      payload,
+    });
+  const saved = await put("/v1/quran/progress", {
+    surah: 114,
+    ayah: 6,
+    version: 1,
+    edition,
+  });
+  expect(saved.statusCode).toBe(200);
+  expect(saved.json().data.edition).toBe(edition);
+  expect(
+    (
+      await put("/v1/quran/progress", {
+        surah: 114,
+        ayah: 7,
+        version: 1,
+        edition,
+      })
+    ).statusCode,
+  ).toBe(400);
+  expect(
+    (
+      await put("/v1/quran/progress", {
+        surah: 114,
+        ayah: 6,
+        version: 1,
+        edition: "wrong",
+      })
+    ).statusCode,
+  ).toBe(409);
+  const edits = await Promise.all([
+    put("/v1/quran/progress", { surah: 1, ayah: 2, version: 1, edition }),
+    put("/v1/quran/progress", { surah: 1, ayah: 3, version: 1, edition }),
+  ]);
+  expect(edits.map((r) => r.statusCode).sort()).toEqual([200, 409]);
+  expect((await put("/v1/quran/bookmarks/114/6", undefined)).statusCode).toBe(
+    200,
+  );
+  expect((await put("/v1/quran/bookmarks/114/7", undefined)).statusCode).toBe(
+    400,
+  );
+  expect(
+    (
+      await system.app.inject({
+        url: "/v1/quran/bookmarks",
+        headers: auth(b.accessToken),
+      })
+    ).json().data,
+  ).toEqual([]);
+  expect(
+    (await put("/v1/dua/favorites/entry-000001", undefined)).statusCode,
+  ).toBe(200);
+  expect(
+    (
+      await system.app.inject({
+        url: "/v1/dua/favorites",
+        headers: auth(b.accessToken),
+      })
+    ).json().data,
+  ).toEqual([]);
+  const exported = (
+    await system.app.inject({
+      url: "/v1/me/export?format=json",
+      headers: auth(a.accessToken),
+    })
+  ).json();
+  expect(exported.quranReadingPosition[0].edition).toBe(edition);
+  expect(exported.quranBookmark).toHaveLength(1);
+  expect(exported.duaFavorite).toHaveLength(1);
+}, 30000);

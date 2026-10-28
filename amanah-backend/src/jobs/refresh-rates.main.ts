@@ -9,11 +9,7 @@ const db = createDatabase(env.DATABASE_URL);
 try {
   const result = await refreshRates(
     db,
-    new RatesProvider(
-      new ProviderHttp(env.PROVIDER_TIMEOUT_MS),
-      env.GOLD_API_KEY,
-      env.EXCHANGE_RATE_API_KEY,
-    ),
+    new RatesProvider(new ProviderHttp(env.PROVIDER_TIMEOUT_MS)),
   );
   console.info(JSON.stringify(result));
 } catch {

@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "androidMediaForegroundPermission": true,
+    "androidAudioService": true,
+    "androidBiometrics": true,
+    "androidSqlCipher": true,
+    "iosSqlCipher": true,
+    "iosBackgroundAudio": true,
+    "iosFaceIdUsage": true,
+    "noMicrophonePermission": true,
+    "noAlwaysLocationDescription": true
+  },
+  "binaryBuilt": false,
+  "signedDeviceTested": false
+}

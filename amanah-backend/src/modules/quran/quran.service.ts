@@ -1,11 +1,18 @@
 import type { z } from "zod";
-import type { Prisma } from "@prisma/client";
+import type { QuranReadingPosition, Prisma } from "@prisma/client";
 import type { Context } from "../../platform/context.js";
 import { authorizeWrite } from "../../platform/auth/actor-context.js";
 import { loadContent } from "../catalog/catalog.service.js";
 import { AppError, conflict } from "../../platform/http/errors.js";
 import type { verseRef, readingInput } from "./quran.schemas.js";
 import { QuranRepository } from "./quran.repository.js";
+const readingDto = (r: QuranReadingPosition) => ({
+  surah: r.surah,
+  ayah: r.ayah,
+  version: r.version,
+  edition: r.edition,
+  updatedAt: r.updatedAt.toISOString(),
+});
 export class QuranService {
   private repo = new QuranRepository();
   private content;
@@ -35,32 +42,49 @@ export class QuranService {
   }
   async progress(uid: string) {
     const r = await this.repo.progress(this.ctx.db, uid);
-    return r ? { ...r, updatedAt: r.updatedAt.toISOString() } : null;
+    return r ? readingDto(r) : null;
   }
   async bookmarks(uid: string) {
     return (await this.repo.bookmarks(this.ctx.db, uid)).map((r) => ({
-      ...r,
+      surah: r.surah,
+      ayah: r.ayah,
       createdAt: r.createdAt.toISOString(),
     }));
   }
   saveProgress(uid: string, b: z.infer<typeof readingInput>) {
     this.validate(b);
+    if (b.edition && b.edition !== this.content?.edition)
+      throw new AppError(
+        409,
+        "CONTENT_EDITION_MISMATCH",
+        "Update the app to use the installed edition.",
+      );
     return this.mutate(uid, async (tx) => {
       const prior = await this.repo.progress(tx, uid);
       if (!prior) {
         if (b.version !== 1) throw conflict();
         const r = await tx.quranReadingPosition.create({
-          data: { userId: uid, surah: b.surah, ayah: b.ayah },
+          data: {
+            userId: uid,
+            surah: b.surah,
+            ayah: b.ayah,
+            edition: this.content!.edition,
+          },
         });
-        return { ...r, updatedAt: r.updatedAt.toISOString() };
+        return readingDto(r);
       }
       const changed = await tx.quranReadingPosition.updateMany({
         where: { userId: uid, version: b.version },
-        data: { surah: b.surah, ayah: b.ayah, version: { increment: 1 } },
+        data: {
+          surah: b.surah,
+          ayah: b.ayah,
+          edition: this.content!.edition,
+          version: { increment: 1 },
+        },
       });
       if (!changed.count) throw conflict();
       const r = (await this.repo.progress(tx, uid))!;
-      return { ...r, updatedAt: r.updatedAt.toISOString() };
+      return readingDto(r);
     });
   }
   bookmark(uid: string, r: z.infer<typeof verseRef>) {

@@ -7,8 +7,16 @@ it("has a runtime validator for every JSON application endpoint", () => {
       ["/v1/openapi.json", "/v1/me/export"].includes(path)
     )
       continue;
-    for (const method of Object.keys(methods))
-      expect(responseValidators[path]?.[method]).toBeDefined();
+    for (const method of Object.keys(methods)) {
+      const operation = (
+        methods as Record<
+          string,
+          { responses: Record<string, { content?: Record<string, unknown> }> }
+        >
+      )[method];
+      if (operation?.responses["200"]?.content?.["application/json"])
+        expect(responseValidators[path]?.[method]).toBeDefined();
+    }
   }
 });
 it("rejects a malformed money response", () => {

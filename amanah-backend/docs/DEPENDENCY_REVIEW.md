@@ -1,15 +1,7 @@
-# Dependency audit
+# Phase 2 dependency review
 
-The audit was run with `pnpm audit --prod --json` against the supplied lockfiles. Backend reported zero known advisories. Mobile reported two high-severity advisories in Expo's CLI dependency chain; the installed CLI is 58.1.15. They are not ignored or claimed fixed.
+The complete frozen graph is audited by `pnpm audit:fresh`; the report and graph/timestamp attestation are regenerated. Release checks run the audit again, including development/build tooling, rather than trusting an old report.
 
-| Package/path                                                                       | Finding                                                | Release treatment                                                                                                                                     |
-| ---------------------------------------------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| expo → @expo/cli → node-forge 1.4.0 (also through @expo/code-signing-certificates) | GHSA-86w9-cpqp-85rv; upstream lists no patched version | Await a compatible upstream fix or a reviewed remediation. Do not use this toolchain to validate untrusted signing material. Re-audit before release. |
-| expo → @expo/cli → zod 3.25.76                                                     | GHSA-mrhx-c7xc-m3w5; patched in 4.6.6+                 | Wait for a supported CLI update or review/test an explicit compatible remediation. Do not force a breaking Zod major merely to suppress an alert.     |
+Expo is updated compatibly within SDK 58. Native audio, local authentication and system UI use the SDK bundled version ranges. The resolution pins node-forge 1.4.2 within the upstream compatible range. A scoped @expo/cli > zod override uses 4.6.7. That major override is deliberate: installed CLI plugin/output/MCP schema code uses compatible APIs. `pnpm dependencies:check` exercises valid/invalid plugin, output and typed MCP parameters plus RSA sign/verify; both native source exports and prebuild configuration are checked separately. This is a supported-source compatibility verification for the delivered graph, not a general assertion about future CLI versions.
 
-Direct application/API validation uses Zod 4.6.7. The audited paths identify CLI/tooling dependencies; this is not a blanket assertion that every use is exploitable, nor a security exemption. A release owner must review reachability, signing/build infrastructure, compatibility and remediation. The actual complete audit JSON is included in DEPENDENCY_AUDIT.json. Findings can change; rerun the audit on the intended release date.
-
-Primary advisory references:
-
-- https://github.com/advisories/GHSA-86w9-cpqp-85rv
-- https://github.com/advisories/GHSA-mrhx-c7xc-m3w5
+The fresh audit reports zero advisories for the current graph; the inherited high findings are not suppressed/ignored. Reassess these overrides on future SDK upgrades and rerun all checks. A zero-advisory registry result does not prove the absence of vulnerabilities or replace device/cloud security review.

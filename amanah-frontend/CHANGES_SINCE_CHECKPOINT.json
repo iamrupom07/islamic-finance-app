@@ -146,8 +146,5 @@
     "src/features/onboarding/WelcomeScreen.tsx",
     "tsconfig.json"
   ],
-  "deleted": [
-    "src/app/(app)/home.tsx",
-    "src/app/(app)/finance.tsx"
-  ]
+  "deleted": ["src/app/(app)/home.tsx", "src/app/(app)/finance.tsx"]
 }

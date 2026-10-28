@@ -56,6 +56,12 @@
     "openapi:check": "node --import tsx scripts/openapi.ts --check",
     "keys:generate": "node --import tsx scripts/keys.ts",
     "release:check": "node --import tsx scripts/release-check.ts",
-    "maintenance": "node --import tsx scripts/maintenance.ts"
+    "maintenance": "node --import tsx scripts/maintenance.ts",
+    "policy:import": "node --import tsx scripts/import-reviewed-policy.ts",
+    "recovery:ledger": "node --import tsx scripts/recovery-ledger.ts",
+    "audit:fresh": "node scripts/audit-dependencies.mjs",
+    "release:evidence": "node scripts/release-evidence.mjs",
+    "content:updates": "node --import tsx scripts/check-content-updates.ts",
+    "test:recovery": "node --import tsx scripts/recovery-drill.ts"
   }
 }

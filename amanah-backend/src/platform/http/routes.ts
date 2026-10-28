@@ -54,10 +54,17 @@ export function registrar(app: FastifyInstance, ctx: Context) {
       headers?: z.ZodType;
       public?: boolean;
       raw?: boolean;
+      rawContent?: Record<string, z.ZodType>;
       description?: string;
     } = {},
   ) {
-    const { public: publicRoute, raw, description, ...schemas } = input;
+    const {
+      public: publicRoute,
+      raw,
+      rawContent,
+      description,
+      ...schemas
+    } = input;
     app.route({
       method,
       url,
@@ -67,7 +74,18 @@ export function registrar(app: FastifyInstance, ctx: Context) {
         description,
         security: publicRoute ? [] : [{ bearerAuth: [] }],
         response: {
-          200: raw ? response : envelope(response),
+          200: rawContent
+            ? {
+                content: Object.fromEntries(
+                  Object.entries(rawContent).map(([type, schema]) => [
+                    type,
+                    { schema },
+                  ]),
+                ),
+              }
+            : raw
+              ? response
+              : envelope(response),
           400: errorSchema,
           401: errorSchema,
           403: errorSchema,

@@ -1,0 +1,30 @@
+[
+  {
+    "url": "https://cdn.mp3quran.net/audio/ibrahim-akhdar/r1/001.mp3",
+    "status": 200,
+    "contentType": "audio/mpeg",
+    "bytes": "375643",
+    "checkedAt": "2026-10-27T20:21:30.399543+00:00"
+  },
+  {
+    "url": "https://cdn.mp3quran.net/audio/ibrahim-akhdar/r1/114.mp3",
+    "status": 200,
+    "contentType": "audio/mpeg",
+    "bytes": "304321",
+    "checkedAt": "2026-10-27T20:21:30.366909+00:00"
+  },
+  {
+    "url": "https://cdn.mp3quran.net/audio/akram-alaqmi/r1/001.mp3",
+    "status": 200,
+    "contentType": "audio/mpeg",
+    "bytes": "883144",
+    "checkedAt": "2026-10-27T20:21:38.520360+00:00"
+  },
+  {
+    "url": "https://cdn.mp3quran.net/audio/akram-alaqmi/r1/114.mp3",
+    "status": 200,
+    "contentType": "audio/mpeg",
+    "bytes": "637384",
+    "checkedAt": "2026-10-27T20:21:38.470128+00:00"
+  }
+]

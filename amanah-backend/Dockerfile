@@ -22,6 +22,7 @@ COPY --from=production-dependencies --chown=node:node /app/node_modules ./node_m
 COPY --from=build --chown=node:node /generated-prisma-client ./node_modules/.prisma/client
 COPY --from=build --chown=node:node /app/dist ./dist
 COPY --from=build --chown=node:node /app/package.json ./package.json
+COPY --chown=node:node content ./content
 USER node
 EXPOSE 8080
 CMD ["node","dist/main.js"]

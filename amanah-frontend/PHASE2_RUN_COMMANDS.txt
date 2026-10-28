@@ -1,0 +1,40 @@
+APPLY FRONTEND PHASE 2
+Extract at the Phase 1 monorepo root. Apply the matching backend migration/API first. Keep your .env. There are no deletion paths for Phase 2.
+Prerequisites: Node 24 LTS (>=24.11 <25), project pnpm 11.25.0; use the pinned manager and lockfile. The Windows Node 24.18 environment meets the Node range.
+
+From amanah-frontend:
+pnpm install --frozen-lockfile
+pnpm typecheck
+pnpm lint
+pnpm format:check
+pnpm test
+pnpm api:check
+pnpm content:verify
+pnpm i18n:check
+pnpm routes:check
+pnpm dependencies:check
+pnpm audit:fresh
+
+Set EXPO_PUBLIC_API_BASE_URL to the updated HTTPS backend origin ending /v1. No paid data API keys are needed.
+Set real AMANAH_ANDROID_PACKAGE, AMANAH_IOS_BUNDLE_ID, EAS_PROJECT_ID, EXPO_PUBLIC_PRIVACY_URL, EXPO_PUBLIC_TERMS_URL, EXPO_PUBLIC_SUPPORT_EMAIL and existing social-sign-in values as applicable. Supply official branding and signing separately.
+
+Regenerate native configuration after updating dependencies:
+pnpm exec expo prebuild --no-install --platform all
+pnpm android
+On macOS with Xcode/CocoaPods:
+pnpm ios
+For JavaScript/Hermes checks:
+pnpm exec expo export --platform android --output-dir /tmp/amanah-android
+pnpm exec expo export --platform ios --output-dir /tmp/amanah-ios
+
+With configured Expo/EAS CLI and actual signing account:
+eas build --profile beta --platform all
+After real-device beta and release prerequisites:
+eas build --profile production --platform all
+EAS/hosting/build quotas are separate from free data API access. Local iOS building requires macOS; a generated iOS project is not an IPA.
+
+Print the candidate source fingerprint:
+node scripts/release-evidence.mjs --fingerprint
+Fill docs/release-evidence.template.json with real evidence and artifacts, save as docs/release-evidence.json or set RELEASE_EVIDENCE_PATH, then run:
+pnpm release:check
+This intentionally fails while external evidence or candidate signed artifacts are missing.

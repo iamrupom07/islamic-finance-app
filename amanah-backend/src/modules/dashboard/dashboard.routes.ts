@@ -1,3 +1,9 @@
+import { currency } from "../../platform/http/schemas.js";
+import {
+  ValuationService,
+  marketView,
+  holdingsView,
+} from "../assets/valuation.service.js";
 import { z } from "zod";
 import type { Context } from "../../platform/context.js";
 import type { Register } from "../../platform/http/routes.js";
@@ -17,6 +23,34 @@ export function dashboardRoutes(
   prayer: PrayerService,
 ) {
   const reports = new ReportsService(ctx);
+  const valuation = new ValuationService(ctx);
+  const marketQuery = z.object({ currency: currency.optional() });
+  route(
+    "GET",
+    "/v1/market/daily",
+    "Market",
+    marketView,
+    (req) =>
+      valuation.market(req.actor.userId, marketQuery.parse(req.query).currency),
+    { querystring: marketQuery },
+  );
+  route("GET", "/v1/holdings/summary", "Assets", holdingsView, (req) =>
+    valuation.holdings(req.actor.userId),
+  );
+  route(
+    "GET",
+    "/v1/finance/overview",
+    "Reports",
+    z.object({
+      report: reportView,
+      trend: z.array(reportView),
+      lifetimeSadaqah: z.string().nullable(),
+      lifetimeStatus: z.enum(["AVAILABLE", "CONVERSION_UNAVAILABLE"]),
+    }),
+    (req) =>
+      reports.overview(req.actor.userId, reportQuery.parse(req.query).month),
+    { querystring: reportQuery },
+  );
   route(
     "GET",
     "/v1/finance/report",

@@ -1,11 +1,10 @@
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
-const audit = JSON.parse(fs.readFileSync("docs/DEPENDENCY_AUDIT.json", "utf8"));
-const findings = audit.metadata?.vulnerabilities;
-if (!findings || findings.high || findings.critical)
-  throw Error(
-    "BLOCKED: unresolved high/critical dependency findings. See docs/DEPENDENCY_REVIEW.md and rerun the audit after a compatible remediation.",
-  );
+import { verifyReleaseEvidence } from "./release-evidence.mjs";
+execFileSync(process.execPath, ["scripts/audit-dependencies.mjs"], {
+  stdio: "inherit",
+});
+await verifyReleaseEvidence();
 const names = [
   "AMANAH_ANDROID_PACKAGE",
   "AMANAH_IOS_BUNDLE_ID",

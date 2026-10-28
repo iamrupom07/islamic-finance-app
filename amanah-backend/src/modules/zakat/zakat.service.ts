@@ -8,18 +8,34 @@ import { writeOnce, audit } from "../../platform/http/idempotency.js";
 import { decodeCursor, encodeCursor } from "../../platform/http/pagination.js";
 import { AppError, missing } from "../../platform/http/errors.js";
 import type { paging } from "../../platform/http/schemas.js";
-import type { paymentInput } from "./zakat.schemas.js";
+import type { correctionInput, paymentInput } from "./zakat.schemas.js";
 import { calculateZakat } from "./zakat.engine.js";
 import { ZakatRepository } from "./zakat.repository.js";
-const paymentDto = (p: ZakatPaymentRecord) => ({
+type PaymentWithCorrections = ZakatPaymentRecord & {
+  corrections?: {
+    id: string;
+    replacementAmount: { toString(): string };
+    reason: string;
+    createdAt: Date;
+  }[];
+};
+const effective = (p: PaymentWithCorrections) =>
+  p.corrections?.[0]?.replacementAmount.toString() ?? p.amount.toString();
+const paymentDto = (p: PaymentWithCorrections) => ({
   ...p,
   amount: p.amount.toString(),
+  effectiveAmount: effective(p),
+  corrections: (p.corrections ?? []).map((c) => ({
+    ...c,
+    replacementAmount: c.replacementAmount.toString(),
+    createdAt: c.createdAt.toISOString(),
+  })),
   paidOn: p.paidOn.toISOString().slice(0, 10),
   createdAt: p.createdAt.toISOString(),
 });
-function yearDto(y: ZakatYear & { payments: ZakatPaymentRecord[] }) {
+function yearDto(y: ZakatYear & { payments: PaymentWithCorrections[] }) {
   const recorded = y.payments.reduce(
-    (sum, p) => sum.add(p.amount.toString()),
+    (sum, p) => sum.add(effective(p)),
     new D(0),
   );
   const assessed = new D(y.assessedAmount.toString());
@@ -27,6 +43,13 @@ function yearDto(y: ZakatYear & { payments: ZakatPaymentRecord[] }) {
     ...y,
     assessedAmount: assessed.toFixed(2),
     recordedAmount: amount(recorded),
+    paymentState: recorded.isZero()
+      ? ("UNPAID" as const)
+      : recorded.gt(assessed)
+        ? ("OVER_RECORDED" as const)
+        : recorded.gte(assessed)
+          ? ("RECORDED" as const)
+          : ("PARTIAL" as const),
     remainingAmount: amount(D.max(0, assessed.sub(recorded))),
     recordStatus: recorded.gt(assessed)
       ? ("OVER_RECORDED" as const)
@@ -122,7 +145,7 @@ export class ZakatService {
           "Record in the assessment currency.",
         );
       const paid = year.payments.reduce(
-        (sum, p) => sum.add(p.amount.toString()),
+        (sum, p) => sum.add(effective(p)),
         new D(0),
       );
       if (
@@ -172,6 +195,64 @@ export class ZakatService {
       return paymentDto(payment);
     });
   }
+  async correctPayment(
+    uid: string,
+    id: string,
+    key: string,
+    b: z.infer<typeof correctionInput>,
+  ) {
+    return writeOnce(
+      this.ctx.db,
+      uid,
+      "zakat:correct:" + id,
+      key,
+      b,
+      async (tx) => {
+        await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${uid + ":zakat-assessment"},0))::text`;
+        const payment = await tx.zakatPaymentRecord.findFirst({
+          where: { id, userId: uid },
+          include: { corrections: { orderBy: { sequence: "desc" } } },
+        });
+        if (!payment) throw missing();
+        if ((payment.corrections[0]?.id ?? null) !== b.lastCorrectionId)
+          throw new AppError(
+            409,
+            "VERSION_CONFLICT",
+            "Reload the latest payment before correcting it.",
+          );
+        const year = await this.repo.year(tx, uid, payment.zakatYearId);
+        if (!year) throw missing();
+        const total = year.payments.reduce(
+          (sum, p) => sum.add(p.id === id ? b.replacementAmount : effective(p)),
+          new D(0),
+        );
+        if (total.gt(year.assessedAmount.toString()) && !b.confirmOverpayment)
+          throw new AppError(
+            422,
+            "OVERPAYMENT_CONFIRMATION",
+            "Confirm recording more than the assessment.",
+          );
+        await tx.zakatPaymentCorrection.create({
+          data: {
+            userId: uid,
+            paymentId: id,
+            sequence: (payment.corrections[0]?.sequence ?? 0) + 1,
+            replacementAmount: b.replacementAmount,
+            reason: b.reason,
+          },
+        });
+        await audit(
+          tx,
+          this.ctx.env.REFRESH_TOKEN_PEPPER,
+          uid,
+          "ZakatPaymentRecord",
+          id,
+          "CORRECTION",
+        );
+        return { ok: true as const };
+      },
+    );
+  }
   async history(uid: string, q: z.infer<typeof paging>) {
     const c = decodeCursor(
       this.ctx.env.CURSOR_SECRET,
@@ -193,7 +274,12 @@ export class ZakatService {
       },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: q.limit + 1,
-      include: { payments: { where: { userId: uid } } },
+      include: {
+        payments: {
+          where: { userId: uid },
+          include: { corrections: { orderBy: { sequence: "desc" } } },
+        },
+      },
     });
     const hasMore = rows.length > q.limit;
     const items = rows.slice(0, q.limit);

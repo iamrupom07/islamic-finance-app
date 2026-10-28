@@ -1,6 +1,13 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import Svg, { Path, Rect, Circle, G, Defs, LinearGradient, Stop } from "react-native-svg";
+import Svg, {
+  Path,
+  Rect,
+  Circle,
+  Defs,
+  LinearGradient,
+  Stop,
+} from "react-native-svg";
 
 /**
  * Amanah brand logo badge (emerald rounded squircle with crescent moon & coin)
@@ -30,7 +37,14 @@ export function AmanahLogoBadge({ size = 38 }: { size?: number }) {
           fill="#8EE2C1"
         />
         {/* Golden Coin overlapping the crescent */}
-        <Circle cx="16" cy="14.5" r="4.2" fill="#FBBF24" stroke="#0D654E" strokeWidth="1" />
+        <Circle
+          cx="16"
+          cy="14.5"
+          r="4.2"
+          fill="#FBBF24"
+          stroke="#0D654E"
+          strokeWidth="1"
+        />
         <Path
           d="M16 12.2V16.8M14 14.5H18"
           stroke="#92400E"
@@ -75,7 +89,12 @@ export function Slide1Illustration() {
   return (
     <View style={styles.archContainer}>
       {/* Background Arch SVG */}
-      <Svg width="310" height="300" viewBox="0 0 310 300" style={StyleSheet.absoluteFill}>
+      <Svg
+        width="310"
+        height="300"
+        viewBox="0 0 310 300"
+        style={StyleSheet.absoluteFill}
+      >
         <Defs>
           <LinearGradient id="archFill1" x1="0%" y1="0%" x2="0%" y2="100%">
             <Stop offset="0%" stopColor="#EAF5F0" />
@@ -114,15 +133,57 @@ export function Slide1Illustration() {
 
         {/* Coin Stack at the bottom */}
         {/* Layer 1 (bottom) */}
-        <Rect x="85" y="275" width="95" height="15" rx="7.5" fill="#DCEDE5" stroke="#71A896" strokeWidth="1.2" />
+        <Rect
+          x="85"
+          y="275"
+          width="95"
+          height="15"
+          rx="7.5"
+          fill="#DCEDE5"
+          stroke="#71A896"
+          strokeWidth="1.2"
+        />
         {/* Layer 2 */}
-        <Rect x="85" y="263" width="95" height="15" rx="7.5" fill="#E2F1EA" stroke="#71A896" strokeWidth="1.2" />
+        <Rect
+          x="85"
+          y="263"
+          width="95"
+          height="15"
+          rx="7.5"
+          fill="#E2F1EA"
+          stroke="#71A896"
+          strokeWidth="1.2"
+        />
         {/* Layer 3 */}
-        <Rect x="85" y="251" width="95" height="15" rx="7.5" fill="#E8F5EF" stroke="#71A896" strokeWidth="1.2" />
+        <Rect
+          x="85"
+          y="251"
+          width="95"
+          height="15"
+          rx="7.5"
+          fill="#E8F5EF"
+          stroke="#71A896"
+          strokeWidth="1.2"
+        />
 
         {/* Tilted Front Coin with 12-petaled Rosette */}
-        <Circle cx="210" cy="256" r="34" fill="#EDF8F3" stroke="#0F6E56" strokeWidth="1.8" />
-        <Circle cx="210" cy="256" r="30" stroke="#71A896" strokeWidth="1" strokeDasharray="2,2" fill="none" />
+        <Circle
+          cx="210"
+          cy="256"
+          r="34"
+          fill="#EDF8F3"
+          stroke="#0F6E56"
+          strokeWidth="1.8"
+        />
+        <Circle
+          cx="210"
+          cy="256"
+          r="30"
+          stroke="#71A896"
+          strokeWidth="1"
+          strokeDasharray="2,2"
+          fill="none"
+        />
         {/* 12-petal star rosette in center */}
         <Path
           d="M 210,236 L 213,248 L 225,243 L 219,253 L 230,256 L 219,259 L 225,269 L 213,264 L 210,276 L 207,264 L 195,269 L 201,259 L 190,256 L 201,253 L 195,243 L 207,248 Z"
@@ -203,7 +264,12 @@ export function Slide1Illustration() {
 export function Slide2Illustration() {
   return (
     <View style={styles.archContainer}>
-      <Svg width="310" height="300" viewBox="0 0 310 300" style={StyleSheet.absoluteFill}>
+      <Svg
+        width="310"
+        height="300"
+        viewBox="0 0 310 300"
+        style={StyleSheet.absoluteFill}
+      >
         <Defs>
           <LinearGradient id="archFill2" x1="0%" y1="0%" x2="0%" y2="100%">
             <Stop offset="0%" stopColor="#EAF5F0" />
@@ -263,27 +329,102 @@ export function Slide2Illustration() {
 
         {/* Balance Scale (Mizan) on Right */}
         {/* Central Stand */}
-        <Path d="M 226,105 L 226,220" stroke="#0F6E56" strokeWidth="2.5" strokeLinecap="round" />
+        <Path
+          d="M 226,105 L 226,220"
+          stroke="#0F6E56"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
         <Circle cx="226" cy="103" r="5" fill="#0F6E56" />
         {/* Base */}
-        <Path d="M 210,220 L 242,220" stroke="#0F6E56" strokeWidth="3" strokeLinecap="round" />
+        <Path
+          d="M 210,220 L 242,220"
+          stroke="#0F6E56"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
         {/* Horizontal Beam */}
-        <Path d="M 180,120 L 272,120" stroke="#0F6E56" strokeWidth="2.2" strokeLinecap="round" />
+        <Path
+          d="M 180,120 L 272,120"
+          stroke="#0F6E56"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+        />
         {/* Left Pan Chains & Pan */}
-        <Path d="M 182,120 L 168,160 M 182,120 L 196,160" stroke="#0F6E56" strokeWidth="1" />
-        <Path d="M 164,160 C 164,172 200,172 200,160 Z" fill="#CDEAE0" stroke="#0F6E56" strokeWidth="1.5" />
+        <Path
+          d="M 182,120 L 168,160 M 182,120 L 196,160"
+          stroke="#0F6E56"
+          strokeWidth="1"
+        />
+        <Path
+          d="M 164,160 C 164,172 200,172 200,160 Z"
+          fill="#CDEAE0"
+          stroke="#0F6E56"
+          strokeWidth="1.5"
+        />
         {/* Right Pan Chains & Pan */}
-        <Path d="M 270,120 L 256,160 M 270,120 L 284,160" stroke="#0F6E56" strokeWidth="1" />
-        <Path d="M 252,160 C 252,172 288,172 288,160 Z" fill="#CDEAE0" stroke="#0F6E56" strokeWidth="1.5" />
+        <Path
+          d="M 270,120 L 256,160 M 270,120 L 284,160"
+          stroke="#0F6E56"
+          strokeWidth="1"
+        />
+        <Path
+          d="M 252,160 C 252,172 288,172 288,160 Z"
+          fill="#CDEAE0"
+          stroke="#0F6E56"
+          strokeWidth="1.5"
+        />
 
         {/* Golden Coins Stack at Base */}
-        <Rect x="150" y="215" width="46" height="10" rx="5" fill="#FBBF24" stroke="#D97706" strokeWidth="1.2" />
-        <Rect x="146" y="223" width="54" height="10" rx="5" fill="#FBBF24" stroke="#D97706" strokeWidth="1.2" />
-        <Rect x="142" y="231" width="62" height="10" rx="5" fill="#F59E0B" stroke="#D97706" strokeWidth="1.2" />
+        <Rect
+          x="150"
+          y="215"
+          width="46"
+          height="10"
+          rx="5"
+          fill="#FBBF24"
+          stroke="#D97706"
+          strokeWidth="1.2"
+        />
+        <Rect
+          x="146"
+          y="223"
+          width="54"
+          height="10"
+          rx="5"
+          fill="#FBBF24"
+          stroke="#D97706"
+          strokeWidth="1.2"
+        />
+        <Rect
+          x="142"
+          y="231"
+          width="62"
+          height="10"
+          rx="5"
+          fill="#F59E0B"
+          stroke="#D97706"
+          strokeWidth="1.2"
+        />
 
         {/* Front Tilted Golden Coin with Plant Sprout Motif */}
-        <Circle cx="192" cy="236" r="23" fill="#FCD34D" stroke="#D97706" strokeWidth="1.8" />
-        <Circle cx="192" cy="236" r="19" stroke="#F59E0B" strokeWidth="0.8" strokeDasharray="2,2" fill="none" />
+        <Circle
+          cx="192"
+          cy="236"
+          r="23"
+          fill="#FCD34D"
+          stroke="#D97706"
+          strokeWidth="1.8"
+        />
+        <Circle
+          cx="192"
+          cy="236"
+          r="19"
+          stroke="#F59E0B"
+          strokeWidth="0.8"
+          strokeDasharray="2,2"
+          fill="none"
+        />
         {/* Sprout motif */}
         <Path
           d="M 192,246 C 192,237 192,230 192,226 M 192,232 C 185,232 182,227 186,224 C 190,222 192,228 192,232 Z M 192,230 C 199,230 202,225 198,222 C 194,220 192,226 192,230 Z"
@@ -316,7 +457,12 @@ export function Slide2Illustration() {
 export function Slide3Illustration() {
   return (
     <View style={styles.archContainer}>
-      <Svg width="310" height="300" viewBox="0 0 310 300" style={StyleSheet.absoluteFill}>
+      <Svg
+        width="310"
+        height="300"
+        viewBox="0 0 310 300"
+        style={StyleSheet.absoluteFill}
+      >
         <Defs>
           <LinearGradient id="archFill3" x1="0%" y1="0%" x2="0%" y2="100%">
             <Stop offset="0%" stopColor="#EAF5F0" />
@@ -341,7 +487,10 @@ export function Slide3Illustration() {
         />
 
         {/* Rising Sun and Rolling Hills in background */}
-        <Path d="M 170,205 C 195,190 230,195 285,215 L 285,260 L 170,260 Z" fill="#D7ECE2" />
+        <Path
+          d="M 170,205 C 195,190 230,195 285,215 L 285,260 L 170,260 Z"
+          fill="#D7ECE2"
+        />
         {/* Sun and rays */}
         <Circle cx="240" cy="180" r="16" fill="#FDE68A" />
         <Path
@@ -361,27 +510,40 @@ export function Slide3Illustration() {
         {/* Chain */}
         <Path d="M 120,40 L 120,105" stroke="#0F6E56" strokeWidth="1.8" />
         {/* Top Dome Cap */}
-        <Path
-          d="M 104,105 C 104,95 136,95 136,105 Z"
-          fill="#0F6E56"
-        />
+        <Path d="M 104,105 C 104,95 136,95 136,105 Z" fill="#0F6E56" />
         <Circle cx="120" cy="92" r="3.5" fill="#0F6E56" />
         {/* Glass Arched Chamber */}
-        <Rect x="100" y="105" width="40" height="52" rx="4" fill="#FFFBEB" stroke="#0F6E56" strokeWidth="2" />
+        <Rect
+          x="100"
+          y="105"
+          width="40"
+          height="52"
+          rx="4"
+          fill="#FFFBEB"
+          stroke="#0F6E56"
+          strokeWidth="2"
+        />
         {/* Lantern decorative struts */}
-        <Path d="M 100,105 L 120,157 L 140,105" stroke="#0F6E56" strokeWidth="1" />
+        <Path
+          d="M 100,105 L 120,157 L 140,105"
+          stroke="#0F6E56"
+          strokeWidth="1"
+        />
         {/* Candle & Glowing Flame */}
-        <Circle cx="120" cy="132" r="12" fill="url(#lanternGlow)" opacity="0.5" />
+        <Circle
+          cx="120"
+          cy="132"
+          r="12"
+          fill="url(#lanternGlow)"
+          opacity="0.5"
+        />
         <Rect x="117" y="132" width="6" height="18" rx="2" fill="#FFFFFF" />
         <Path
           d="M 120,123 C 118,127 118,131 120,132 C 122,131 122,127 120,123 Z"
           fill="#F59E0B"
         />
         {/* Bottom Taper of Lantern */}
-        <Path
-          d="M 100,157 L 120,175 L 140,157 Z"
-          fill="#0F6E56"
-        />
+        <Path d="M 100,157 L 120,175 L 140,157 Z" fill="#0F6E56" />
         <Circle cx="120" cy="177" r="3" fill="#0F6E56" />
 
         {/* Holy Quran Book on Right */}
@@ -400,7 +562,15 @@ export function Slide3Illustration() {
           strokeWidth="1.5"
         />
         {/* Gold medallion in center of Quran cover */}
-        <Circle cx="196" cy="190" r="11" fill="none" stroke="#FBBF24" strokeWidth="1.2" strokeDasharray="2,1" />
+        <Circle
+          cx="196"
+          cy="190"
+          r="11"
+          fill="none"
+          stroke="#FBBF24"
+          strokeWidth="1.2"
+          strokeDasharray="2,1"
+        />
         <Path
           d="M 196,183 L 198,188 L 203,186 L 201,190 L 205,192 L 201,194 L 203,198 L 198,196 L 196,201 L 194,196 L 189,198 L 191,194 L 187,192 L 191,190 L 189,186 L 194,188 Z"
           fill="#FBBF24"

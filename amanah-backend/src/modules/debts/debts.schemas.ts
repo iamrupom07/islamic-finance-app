@@ -10,6 +10,7 @@ export const debtInput = z
   .object({
     direction: z.enum(["I_OWE", "OWED_TO_ME"]),
     label: z.string().trim().min(1).max(100),
+    note: z.string().trim().max(500).nullable().optional(),
     originalAmount: positiveMoney,
     remainingAmount: money,
     currency,
@@ -43,5 +44,7 @@ export const debtEventView = z.object({
   eventType: z.string(),
   previousRemaining: z.string(),
   nextRemaining: z.string(),
+  paidOn: civilDate.nullable(),
+  note: z.string().nullable(),
   occurredAt: z.string(),
 });

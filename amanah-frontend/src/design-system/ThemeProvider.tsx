@@ -1,4 +1,6 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useEffect } from "react";
+import { StatusBar } from "expo-status-bar";
+import * as SystemUI from "expo-system-ui";
 import { useColorScheme } from "react-native";
 import { useAuth } from "../core/auth/AuthProvider";
 import { light, dark } from "./tokens";
@@ -15,6 +17,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const mode = account?.preferences.appearance ?? "system";
   const isDark = mode === "dark" || (mode === "system" && system === "dark");
   const locale = account?.preferences.locale ?? "en";
+  useEffect(() => {
+    void SystemUI.setBackgroundColorAsync((isDark ? dark : light).canvas).catch(
+      () => {},
+    );
+  }, [isDark]);
   return (
     <Theme.Provider
       value={{
@@ -24,6 +31,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         t: (s) => translate(s, locale),
       }}
     >
+      <StatusBar style={isDark ? "light" : "dark"} />
       {children}
     </Theme.Provider>
   );

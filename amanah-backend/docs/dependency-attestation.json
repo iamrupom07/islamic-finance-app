@@ -1,0 +1,12 @@
+{
+  "graphHash": "80e40d96c79316b597d9e4992bcedf193ee042ec6efac280e0656472e33e999e",
+  "checkedAt": "2026-10-28T06:54:02.730Z",
+  "scope": "complete frozen dependency graph",
+  "vulnerabilities": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0
+  }
+}

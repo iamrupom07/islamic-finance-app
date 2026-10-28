@@ -1,0 +1,15 @@
+{
+  "name": "islamic-finance-app",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.25.0",
+  "scripts": {
+    "test": "pnpm --dir amanah-backend test && pnpm --dir amanah-frontend test",
+    "test:all": "pnpm --dir amanah-backend test && pnpm --dir amanah-frontend test",
+    "typecheck": "pnpm --dir amanah-backend typecheck && pnpm --dir amanah-frontend typecheck",
+    "lint": "pnpm --dir amanah-backend lint && pnpm --dir amanah-frontend lint",
+    "format:check": "pnpm --dir amanah-backend format:check && pnpm --dir amanah-frontend format:check",
+    "verify": "pnpm --dir amanah-backend prisma:generate && pnpm --dir amanah-backend typecheck && pnpm --dir amanah-backend lint && pnpm --dir amanah-backend format:check && pnpm --dir amanah-backend test && pnpm --dir amanah-backend openapi:check && pnpm --dir amanah-backend build && pnpm --dir amanah-frontend typecheck && pnpm --dir amanah-frontend lint && pnpm --dir amanah-frontend format:check && pnpm --dir amanah-frontend api:check && pnpm --dir amanah-frontend routes:check && pnpm --dir amanah-frontend content:verify && pnpm --dir amanah-frontend i18n:check && pnpm --dir amanah-frontend test"
+  }
+}
+

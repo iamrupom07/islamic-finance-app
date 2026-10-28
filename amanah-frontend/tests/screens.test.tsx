@@ -137,6 +137,7 @@ jest.mock("../src/content/ContentProvider", () => ({
 jest.mock("../src/core/notifications/scheduler", () => ({
   requestReminderPermission: jest.fn(async () => false),
   reconcileReminders: jest.fn(async () => {}),
+  reminderCoverage: jest.fn(async () => null),
 }));
 jest.mock("../src/core/storage/export-file", () => ({
   shareExport: jest.fn(async () => {}),
@@ -205,7 +206,13 @@ it.each(screens)(
 it("shows a real empty Home and routes Add expense to the form", async () => {
   jest.mocked(useAccountQuery).mockReturnValueOnce({
     data: {
-      monthlyFinance: { income: "0.00", expenses: "0.00", currency: "BDT" },
+      monthlyFinance: {
+        income: "0.00",
+        expenses: "0.00",
+        currency: "BDT",
+        reasons: [],
+        status: "AVAILABLE",
+      },
       zakat: {
         estimate: null,
         currency: "BDT",
@@ -223,6 +230,10 @@ it("shows a real empty Home and routes Add expense to the form", async () => {
   const screen = await render(<HomeScreen />);
   expect(screen.getByText("CALCULATION UNAVAILABLE")).toBeTruthy();
   expect(screen.queryByText("Due now")).toBeNull();
+  expect(screen.queryByText("৳85,000")).toBeNull();
+  expect(screen.queryByText("৳32,400")).toBeNull();
+  expect(screen.queryByText("৳12,450")).toBeNull();
+  expect(screen.getAllByText("৳0.00")).toHaveLength(2);
   await fireEvent.press(screen.getByRole("button", { name: "Add expense" }));
   expect(mockPush).toHaveBeenCalledWith("/transactions/new?type=EXPENSE");
 });

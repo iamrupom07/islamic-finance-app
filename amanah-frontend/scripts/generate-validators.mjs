@@ -55,6 +55,10 @@ for (const [path, methods] of Object.entries(contract.paths)) {
     JSON.stringify(path) +
     ":{" +
     Object.entries(methods)
+      .filter(
+        ([, op]) =>
+          op.responses?.["200"]?.content?.["application/json"]?.schema,
+      )
       .map(
         ([method, op]) =>
           JSON.stringify(method) +

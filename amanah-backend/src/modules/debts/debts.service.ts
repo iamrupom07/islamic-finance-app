@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import type { Debt, Prisma } from "@prisma/client";
 import { z } from "zod";
 import type { Context } from "../../platform/context.js";
@@ -129,6 +130,7 @@ export class DebtService {
         const b = debtInput.parse({
           direction: prior.direction,
           label: prior.label,
+          note: prior.note,
           originalAmount: prior.originalAmount.toString(),
           remainingAmount: prior.remainingAmount.toString(),
           currency: prior.currency,
@@ -138,6 +140,8 @@ export class DebtService {
           ...fields,
         });
         const data = normalize(b, this.ctx.now());
+        if (prior.status === "SETTLED" && data.status === "SETTLED")
+          data.settledAt = prior.settledAt;
         const change = await tx.debt.updateMany({
           where: { userId: uid, id, version, deletedAt: null },
           data: { ...data, version: { increment: 1 } },
@@ -235,6 +239,77 @@ export class DebtService {
       },
     );
   }
+  async repay(
+    uid: string,
+    id: string,
+    key: string,
+    b: { version: number; amount: string; paidOn: string; note?: string },
+  ) {
+    return writeOnce(
+      this.ctx.db,
+      uid,
+      "debts:repay:" + id,
+      key,
+      b,
+      async (tx) => {
+        const prior = await this.repo.get(tx, uid, id);
+        if (!prior) throw missing();
+        if (prior.version !== b.version) throw conflict();
+        const local = (
+          await tx.userPreference.findUniqueOrThrow({ where: { userId: uid } })
+        ).timezone;
+        const today = DateTime.fromJSDate(this.ctx.now())
+          .setZone(local)
+          .toISODate()!;
+        if (
+          b.paidOn > today ||
+          b.paidOn < prior.openedOn.toISOString().slice(0, 10)
+        )
+          throw new AppError(
+            422,
+            "PAYMENT_DATE_INVALID",
+            "Use a payment date between opening and today.",
+          );
+        const next = new D(prior.remainingAmount.toString()).sub(b.amount);
+        if (next.lt(0))
+          throw new AppError(
+            422,
+            "REPAYMENT_EXCEEDS_BALANCE",
+            "Payment cannot exceed the remaining balance.",
+          );
+        const changed = await tx.debt.updateMany({
+          where: { id, userId: uid, version: b.version, deletedAt: null },
+          data: {
+            remainingAmount: next.toString(),
+            status: next.isZero() ? "SETTLED" : "OPEN",
+            settledAt: next.isZero() ? this.ctx.now() : null,
+            version: { increment: 1 },
+          },
+        });
+        if (!changed.count) throw conflict();
+        await tx.debtEvent.create({
+          data: {
+            userId: uid,
+            debtId: id,
+            eventType: "REPAYMENT",
+            previousRemaining: prior.remainingAmount,
+            nextRemaining: next.toString(),
+            paidOn: new Date(b.paidOn),
+            note: b.note,
+          },
+        });
+        await audit(
+          tx,
+          this.ctx.env.REFRESH_TOKEN_PEPPER,
+          uid,
+          "Debt",
+          id,
+          "REPAYMENT",
+        );
+        return debtDto((await this.repo.get(tx, uid, id))!);
+      },
+    );
+  }
   async events(uid: string, id: string) {
     if (!(await this.repo.get(this.ctx.db, uid, id))) throw missing();
     return (
@@ -247,6 +322,7 @@ export class DebtService {
       ...r,
       previousRemaining: r.previousRemaining.toString(),
       nextRemaining: r.nextRemaining.toString(),
+      paidOn: r.paidOn?.toISOString().slice(0, 10) ?? null,
       occurredAt: r.occurredAt.toISOString(),
     }));
   }

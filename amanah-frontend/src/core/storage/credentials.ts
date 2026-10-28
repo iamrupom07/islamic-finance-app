@@ -13,7 +13,9 @@ const isWeb = Platform.OS === "web";
 async function getItem(k: string): Promise<string | null> {
   if (isWeb) {
     try {
-      return typeof localStorage !== "undefined" ? localStorage.getItem(k) : null;
+      return typeof localStorage !== "undefined"
+        ? localStorage.getItem(k)
+        : null;
     } catch {
       return null;
     }

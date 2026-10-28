@@ -147,5 +147,38 @@ const coreBn: Record<string, string> = {
   Copied: "কপি হয়েছে",
 };
 export const bn: Record<string, string> = { ...coreBn, ...extra };
-export const translate = (text: string, locale: string) =>
-  locale === "bn" ? (bn[text] ?? text) : text;
+export function translate(text: string, locale: string): string {
+  if (locale !== "bn") return text;
+  if (bn[text]) return bn[text]!;
+  const prayer: Record<string, string> = {
+    Fajr: "ফজর",
+    Sunrise: "সূর্যোদয়",
+    Dhuhr: "যোহর",
+    Asr: "আসর",
+    Maghrib: "মাগরিব",
+    Isha: "ইশা",
+  };
+  if (prayer[text]) return prayer[text]!;
+  let match = text.match(
+    /^(Fajr|Dhuhr|Asr|Maghrib|Isha) starts in (\d+) minutes(?: · (.+))?$/,
+  );
+  if (match)
+    return `${prayer[match[1]!]} শুরু হতে ${match[2]} মিনিট${match[3] ? " · " + match[3] : ""}`;
+  match = text.match(/^(Fajr|Dhuhr|Asr|Maghrib|Isha): ends in (\d+) minutes$/);
+  if (match) return `${prayer[match[1]!]} শেষ হতে ${match[2]} মিনিট`;
+  match = text.match(/^Juz (\d+)$/);
+  if (match) return `পারা ${match[1]}`;
+  match = text.match(/^Repetitions: (.+)$/);
+  if (match) return `পাঠের সংখ্যা: ${match[1]}`;
+  if (
+    /^\d{4}-\d{2}-\d{2}(?:T[0-9:.+-]+Z?)?$/.test(text) &&
+    !Number.isNaN(Date.parse(text))
+  )
+    return new Intl.DateTimeFormat(
+      "bn-BD",
+      text.length === 10
+        ? { dateStyle: "medium", timeZone: "UTC" }
+        : { dateStyle: "medium", timeStyle: "short" },
+    ).format(new Date(text));
+  return text;
+}

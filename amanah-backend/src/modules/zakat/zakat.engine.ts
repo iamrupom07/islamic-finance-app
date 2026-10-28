@@ -63,6 +63,8 @@ export function calculateZakat(input: {
     lines: [],
     reasons: [],
     disclaimer,
+    valuationDate: localDate,
+    valuationBasis: "CURRENT_DECLARED_HOLDINGS",
     fingerprint: "",
   };
   const finish = () => {
@@ -90,6 +92,14 @@ export function calculateZakat(input: {
     return finish();
   }
   const policyRules = parsed.data;
+  result.policyDetails = {
+    sourceNotes: policy.sourceNotes ?? null,
+    reviewedBy: policy.reviewedBy!,
+    approvedAt: policy.approvedAt!.toISOString(),
+    goldGrams: policy.goldGrams.toString(),
+    silverGrams: policy.silverGrams.toString(),
+    rules: policyRules,
+  };
   result.nisabGrams = (
     p.nisabStandard === "GOLD" ? policy.goldGrams : policy.silverGrams
   ).toString();
@@ -127,6 +137,11 @@ export function calculateZakat(input: {
   const convert = (v: string, currency: string) =>
     fxFromSet(rates, v, currency, p.currency);
   try {
+    result.nisabQuote = {
+      usdPerTroyOz: selected.usdPerTroyOz.toString(),
+      fxRateApplied: convert("1", "USD").toString(),
+      troyOunceGrams: troyOzGrams.toString(),
+    };
     const nisab = convert(
       new D(result.nisabGrams)
         .mul(selected.usdPerTroyOz.toString())
@@ -138,9 +153,18 @@ export function calculateZakat(input: {
       const included = policyRules.assetTypes.includes(
         a.type as z.infer<typeof rules>["assetTypes"][number],
       );
+      if (
+        included &&
+        a.valuationMode === "MANUAL" &&
+        now.getTime() - a.valuedOn.getTime() > 90 * 86400000
+      )
+        result.reasons.push(
+          `Review the declared valuation for ${a.label}; it is over 90 days old.`,
+        );
       let raw = a.declaredValue?.toString() ?? null;
       let sourceAt = a.valuedOn.toISOString();
       let originalCurrency = a.currency;
+      let metalUsdPerTroyOz: string | null = null;
       if (a.valuationMode === "METAL_RATE") {
         const quote = rates.metals.find(
           (m) => m.metal === (a.type === "GOLD" ? "XAU" : "XAG"),
@@ -148,6 +172,7 @@ export function calculateZakat(input: {
         if (included && (!quote || !a.weightGrams || !a.purity))
           throw Error("Missing metal valuation.");
         if (quote && a.weightGrams && a.purity) {
+          metalUsdPerTroyOz = quote.usdPerTroyOz.toString();
           raw = metalValue(
             a.weightGrams.toString(),
             a.purity.toString(),
@@ -164,6 +189,12 @@ export function calculateZakat(input: {
       if (converted) assetTotal = assetTotal.add(converted);
       result.lines.push({
         id: a.id,
+        weightGrams: a.weightGrams?.toString() ?? null,
+        purity: a.purity?.toString() ?? null,
+        metalUsdPerTroyOz,
+        fxRateApplied: included
+          ? convert("1", originalCurrency).toString()
+          : null,
         label: a.label,
         kind: "ASSET",
         included,
@@ -197,6 +228,7 @@ export function calculateZakat(input: {
       }
       result.lines.push({
         id: d.id,
+        fxRateApplied: included ? convert("1", d.currency).toString() : null,
         label: d.label,
         kind: liability ? "LIABILITY" : "RECEIVABLE",
         included,
@@ -246,7 +278,7 @@ export function calculateZakat(input: {
       );
     if (result.period && localDate >= result.period.end)
       result.reasons.push(
-        "The declared period has ended. Confirm ongoing conditions with an advisor; no subsequent year is created automatically.",
+        "The estimate values current declared holdings at the displayed valuation date; it does not reconstruct wealth on the past anniversary. The declared period has ended. Confirm ongoing conditions with an advisor; no subsequent year is created automatically.",
       );
   } catch {
     result.status = "CALCULATION_UNAVAILABLE";

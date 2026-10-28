@@ -72,10 +72,28 @@ export class IdentityService {
       return { message: generic };
     try {
       const user = await this.ctx.db.$transaction(async (tx) => {
+        const defaultPolicy = await tx.zakatPolicyVersion.findFirst({
+          where: {
+            status: "APPROVED",
+            reviewedBy: { not: null },
+            approvedAt: { not: null },
+          },
+          orderBy: { approvedAt: "desc" },
+        });
         const u =
           existing ??
           (await tx.user.create({
-            data: { email, passwordHash, preference: { create: {} } },
+            data: {
+              email,
+              passwordHash,
+              preference: {
+                create: {
+                  ...(defaultPolicy
+                    ? { policyVersionId: defaultPolicy.id }
+                    : {}),
+                },
+              },
+            },
           }));
         await tx.oneTimeToken.updateMany({
           where: { userId: u.id, kind: "VERIFY", consumedAt: null },
@@ -326,12 +344,24 @@ export class IdentityService {
         "Sign in using your existing method. Automatic account linking is disabled.",
       );
     try {
+      const defaultPolicy = await this.ctx.db.zakatPolicyVersion.findFirst({
+        where: {
+          status: "APPROVED",
+          reviewedBy: { not: null },
+          approvedAt: { not: null },
+        },
+        orderBy: { approvedAt: "desc" },
+      });
       const u = await this.ctx.db.user.create({
         data: {
           email: claims.email,
           emailVerifiedAt: this.ctx.now(),
           identities: { create: { provider, subject: claims.subject } },
-          preference: { create: {} },
+          preference: {
+            create: {
+              ...(defaultPolicy ? { policyVersionId: defaultPolicy.id } : {}),
+            },
+          },
         },
       });
       return this.createSession(u);

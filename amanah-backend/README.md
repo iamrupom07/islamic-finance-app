@@ -1,19 +1,11 @@
-# Amanah backend
+# Amanah API — merged Phase 1 + Phase 2
 
-Modular Fastify 5 / Node 24 / TypeScript API, Prisma 7.10.1 / PostgreSQL, Upstash REST, and a same-image Cloud Run rate-refresh job. The mobile app never connects to the database or Redis.
+This is the complete merged source, including the original project and both phases. No earlier ZIP is required. Extract both archives into the same new parent directory, then follow RUN_INSTRUCTIONS.txt. Configure your own environment values; deploy the matching backend and migrations before the mobile app. Historical phase reports are retained for traceability.
 
-## Start
+The runtime includes content/bundle.json and its independent edition lock. With CONTENT_BUNDLE_PATH unset, the bundled publisher edition is loaded from the backend working directory. An explicit custom path must have a matching edition-lock.json beside it and pass the same schema/hash/count checks. An old approved:false bundle stays unavailable. The Docker image copies bundled content into /app/content; run commands from the backend root.
 
-1. Install Node 24 LTS (24.11+ on the 24 line) and pnpm 11.25.0 through Corepack.
-2. Run `pnpm install --frozen-lockfile` and `pnpm prisma:generate`.
-3. Copy `.env.example` to `.env`. Set pooled DATABASE_URL and direct DIRECT_URL for your isolated development database. Run `pnpm keys:generate` and privately copy its output into your environment.
-4. Set `MAIL_PROVIDER=development` for a private local mailbox in `.local-mail`, or configure Resend. Development mail never sends real email. Read the local token JSON and open the corresponding native verification/reset link. Production requires a verified real mail provider.
-5. Review then apply migrations with `pnpm db:migrate:deploy`. Never use db push or run migrations at API cold start.
-6. Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, then `pnpm dev`. The API listens on 0.0.0.0:8080 by default. Public liveness is `/health/live`; private routes require app authentication.
-7. For integration tests, set TEST_DATABASE_URL to an isolated database named amanah_test*. Apply the migrations to that database first, then run `pnpm test:integration`. Tests create synthetic data, not production policy.
+New behavior: catalog edition compatibility, edition-bound reading positions, corrected strict reading/bookmark response DTOs, complete verified reference validation, and an authenticated readable HTML statement at GET /v1/zakat/history/:id/statement. JSON/CSV/HTML file response media types are described accurately in OpenAPI. Statement rendering escapes user text and uses a self-contained content-security policy.
 
-`docs/openapi.json` is the client contract. After changing schemas, run `pnpm openapi:generate`, copy that contract to the mobile repository's contracts/openapi.json, then run mobile `pnpm api:generate` and both contract checks.
+No new paid API is used. Phase 1 keyless metal/FX/prayer adapters and reviewed zakat/prayer policy gates remain. No policy has been newly approved. Content publisher provenance is separate from independent release review.
 
-See `docs/runbooks/OPERATIONS.md`, `VERIFICATION.md` and `RELEASE_GATES.md` for release, scale-to-zero deployment, secrets/IAM, backup/restore, incident handling, content/policy installation and external acceptance. No Cloud account was provisioned or deployed in this coding environment. The Dockerfile and deployment scripts are included; image execution still needs Docker/Cloud Build validation.
-
-This is a full source archive. Apply the new third migration additively to an existing checkpoint database; never overwrite an applied migration or delete production data to resolve a mismatch.
+Read PHASE2_RUN_COMMANDS.txt, VERIFICATION.md, RELEASE_GATES.md, docs/CONTENT_PROVENANCE.md and docs/PHASE2_OPERATIONS.md. Integration and recovery tools are restricted to explicitly isolated database names. Recovery ledger export is sensitive and must be archived separately from database backups with the original matching identity pepper. Actual cloud backup restoration, incident ownership and signed native release evidence are still external prerequisites.

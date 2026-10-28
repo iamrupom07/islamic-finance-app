@@ -1,0 +1,1 @@
+Bangla translations cover 300 static JSX labels. Publisher texts, user content, dynamic messages and device layout still require separate review.

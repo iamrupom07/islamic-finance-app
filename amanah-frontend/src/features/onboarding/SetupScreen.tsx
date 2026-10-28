@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,10 @@ import {
   ActivityIndicator,
   useWindowDimensions,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import * as Location from "expo-location";
@@ -58,6 +61,12 @@ export function SetupScreen({
     queryKey: ["catalog"],
     queryFn: async () => dataOf(await api.GET("/v1/catalog")),
   });
+  useEffect(() => {
+    const firstPolicy = catalog.data?.policies?.[0];
+    if (!policy && firstPolicy) {
+      setPolicy(firstPolicy.id);
+    }
+  }, [catalog.data?.policies, policy]);
   const save = async (
     changes: Partial<Preferences> & { completeSetup?: boolean },
     next: string,
@@ -405,9 +414,24 @@ function CurrencySetupView({
             1 of 3
           </Text>
           <View style={currencyStyles.progressBarsRow}>
-            <View style={[currencyStyles.progressBar, currencyStyles.progressBarActive]} />
-            <View style={[currencyStyles.progressBar, { backgroundColor: isDark ? "#334155" : "#CBD5E1" }]} />
-            <View style={[currencyStyles.progressBar, { backgroundColor: isDark ? "#334155" : "#CBD5E1" }]} />
+            <View
+              style={[
+                currencyStyles.progressBar,
+                currencyStyles.progressBarActive,
+              ]}
+            />
+            <View
+              style={[
+                currencyStyles.progressBar,
+                { backgroundColor: isDark ? "#334155" : "#CBD5E1" },
+              ]}
+            />
+            <View
+              style={[
+                currencyStyles.progressBar,
+                { backgroundColor: isDark ? "#334155" : "#CBD5E1" },
+              ]}
+            />
           </View>
         </View>
 
@@ -452,16 +476,18 @@ function CurrencySetupView({
             },
           ]}
         >
-          <Search size={20} color="#94A3B8" strokeWidth={2} style={{ marginRight: 10 }} />
+          <Search
+            size={20}
+            color="#94A3B8"
+            strokeWidth={2}
+            style={{ marginRight: 10 }}
+          />
           <TextInput
             value={search}
             onChangeText={setSearch}
             placeholder="Search currencies"
             placeholderTextColor={isDark ? "#64748B" : "#94A3B8"}
-            style={[
-              currencyStyles.searchInput,
-              { color: colors.ink },
-            ]}
+            style={[currencyStyles.searchInput, { color: colors.ink }]}
           />
         </View>
 
@@ -469,7 +495,11 @@ function CurrencySetupView({
         <View
           style={[
             currencyStyles.currencyList,
-            isWide && { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" },
+            isWide && {
+              flexDirection: "row",
+              flexWrap: "wrap",
+              justifyContent: "space-between",
+            },
           ]}
         >
           {filteredCurrencies.map((opt) => {
@@ -504,8 +534,12 @@ function CurrencySetupView({
                     currencyStyles.symbolBadge,
                     {
                       backgroundColor: isSelected
-                        ? (isDark ? "#172E24" : "#EBF5F0")
-                        : (isDark ? "#1E293B" : "#F1F5F9"),
+                        ? isDark
+                          ? "#172E24"
+                          : "#EBF5F0"
+                        : isDark
+                          ? "#1E293B"
+                          : "#F1F5F9",
                     },
                   ]}
                 >
@@ -529,7 +563,8 @@ function CurrencySetupView({
                       currencyStyles.codeText,
                       {
                         color: colors.ink,
-                        fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium",
+                        fontFamily:
+                          locale === "bn" ? "Bengali" : "OutfitMedium",
                       },
                     ]}
                   >
@@ -598,7 +633,12 @@ function CurrencySetupView({
               >
                 Continue
               </Text>
-              <ArrowRight size={20} color="#FFFFFF" strokeWidth={2.2} style={{ marginLeft: 8 }} />
+              <ArrowRight
+                size={20}
+                color="#FFFFFF"
+                strokeWidth={2.2}
+                style={{ marginLeft: 8 }}
+              />
             </>
           )}
         </Pressable>

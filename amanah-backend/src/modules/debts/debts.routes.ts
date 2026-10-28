@@ -23,6 +23,38 @@ export function debtsRoutes(route: Register, ctx: Context) {
   const query = paging.extend({
     direction: z.enum(["I_OWE", "OWED_TO_ME"]).optional(),
   });
+  const repayment = z
+    .object({
+      version,
+      amount: z
+        .string()
+        .regex(/^(?:0|[1-9]\d{0,13})(?:\.\d{1,4})?$/)
+        .refine((v) => /[1-9]/.test(v)),
+      paidOn: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/)
+        .refine(
+          (v) =>
+            !Number.isNaN(Date.parse(v)) &&
+            new Date(v).toISOString().slice(0, 10) === v,
+        ),
+      note: z.string().trim().max(500).optional(),
+    })
+    .strict();
+  route(
+    "POST",
+    "/v1/debts/:id/repayments",
+    "Debts",
+    debtView,
+    (req) =>
+      s.repay(
+        req.actor.userId,
+        idParams.parse(req.params).id,
+        idempotencyHeaders.parse(req.headers)["idempotency-key"],
+        repayment.parse(req.body),
+      ),
+    { params: idParams, headers: idempotencyHeaders, body: repayment },
+  );
   const deleteBody = z.object({ version }).strict();
   route("GET", "/v1/debts", "Debts", page(debtView), c.list, {
     querystring: query,

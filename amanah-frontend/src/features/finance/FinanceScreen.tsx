@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import Svg, { Path, Rect, Text as SvgText } from "react-native-svg";
 import {
@@ -17,18 +17,43 @@ import { useAuth } from "../../core/auth/AuthProvider";
 import { monthNow } from "../../core/i18n/formatters";
 import { api, dataOf } from "../../core/api/client";
 import { useAccountQuery } from "../../core/api/hooks";
+import { percent, shiftMonth } from "./value-tools";
 
-function formatCurrency(amount: string | number | null | undefined, currency: string = "BDT") {
-  const sym = currency === "BDT" ? "৳" : currency === "USD" ? "$" : currency === "EUR" ? "€" : currency === "GBP" ? "£" : currency;
-  if (amount == null) return `${sym}0`;
+function formatCurrency(
+  amount: string | number | null | undefined,
+  currency: string = "BDT",
+) {
+  const sym =
+    currency === "BDT"
+      ? "৳"
+      : currency === "USD"
+        ? "$"
+        : currency === "EUR"
+          ? "€"
+          : currency === "GBP"
+            ? "£"
+            : currency;
+  if (amount == null) return `${sym}0.00`;
   const num = typeof amount === "string" ? parseFloat(amount) : amount;
-  if (isNaN(num)) return `${sym}0`;
-  return `${sym}${Math.round(num).toLocaleString()}`;
+  if (isNaN(num)) return `${sym}0.00`;
+  const parts = num.toFixed(2).split(".");
+  const integer = parts[0]!.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return `${sym}${integer}.${parts[1]}`;
 }
 
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 function formatMonthLabel(monthStr: string) {
@@ -68,34 +93,94 @@ function IncomeVsExpensesChart() {
       <Svg width="100%" height={175} viewBox="0 0 320 175">
         {/* Horizontal Dotted Gridlines & Y-Axis Labels */}
         {/* 100K */}
-        <SvgText x="30" y="28" fill="#94A3B8" fontSize="10.5" fontFamily="Outfit" textAnchor="end">
+        <SvgText
+          x="30"
+          y="28"
+          fill="#94A3B8"
+          fontSize="10.5"
+          fontFamily="Outfit"
+          textAnchor="end"
+        >
           100K
         </SvgText>
-        <Path d="M 36 25 H 312" stroke="#E2E8F0" strokeWidth="1" strokeDasharray="3,3" />
+        <Path
+          d="M 36 25 H 312"
+          stroke="#E2E8F0"
+          strokeWidth="1"
+          strokeDasharray="3,3"
+        />
 
         {/* 75K */}
-        <SvgText x="30" y="58" fill="#94A3B8" fontSize="10.5" fontFamily="Outfit" textAnchor="end">
+        <SvgText
+          x="30"
+          y="58"
+          fill="#94A3B8"
+          fontSize="10.5"
+          fontFamily="Outfit"
+          textAnchor="end"
+        >
           75K
         </SvgText>
-        <Path d="M 36 55 H 312" stroke="#E2E8F0" strokeWidth="1" strokeDasharray="3,3" />
+        <Path
+          d="M 36 55 H 312"
+          stroke="#E2E8F0"
+          strokeWidth="1"
+          strokeDasharray="3,3"
+        />
 
         {/* 50K */}
-        <SvgText x="30" y="88" fill="#94A3B8" fontSize="10.5" fontFamily="Outfit" textAnchor="end">
+        <SvgText
+          x="30"
+          y="88"
+          fill="#94A3B8"
+          fontSize="10.5"
+          fontFamily="Outfit"
+          textAnchor="end"
+        >
           50K
         </SvgText>
-        <Path d="M 36 85 H 312" stroke="#E2E8F0" strokeWidth="1" strokeDasharray="3,3" />
+        <Path
+          d="M 36 85 H 312"
+          stroke="#E2E8F0"
+          strokeWidth="1"
+          strokeDasharray="3,3"
+        />
 
         {/* 25K */}
-        <SvgText x="30" y="118" fill="#94A3B8" fontSize="10.5" fontFamily="Outfit" textAnchor="end">
+        <SvgText
+          x="30"
+          y="118"
+          fill="#94A3B8"
+          fontSize="10.5"
+          fontFamily="Outfit"
+          textAnchor="end"
+        >
           25K
         </SvgText>
-        <Path d="M 36 115 H 312" stroke="#E2E8F0" strokeWidth="1" strokeDasharray="3,3" />
+        <Path
+          d="M 36 115 H 312"
+          stroke="#E2E8F0"
+          strokeWidth="1"
+          strokeDasharray="3,3"
+        />
 
         {/* 0 (Base Line) */}
-        <SvgText x="30" y="148" fill="#94A3B8" fontSize="10.5" fontFamily="Outfit" textAnchor="end">
+        <SvgText
+          x="30"
+          y="148"
+          fill="#94A3B8"
+          fontSize="10.5"
+          fontFamily="Outfit"
+          textAnchor="end"
+        >
           0
         </SvgText>
-        <Path d="M 36 145 H 312" stroke="#E2E8F0" strokeWidth="1" strokeDasharray="3,3" />
+        <Path
+          d="M 36 145 H 312"
+          stroke="#E2E8F0"
+          strokeWidth="1"
+          strokeDasharray="3,3"
+        />
 
         {/* Grouped Month Bars */}
         {chartData.map((item, idx) => {
@@ -148,7 +233,7 @@ export function FinanceScreen() {
   const { account } = useAuth();
   const router = useRouter();
   const [month, setMonth] = useState(
-    monthNow(account?.preferences?.timezone ?? "Asia/Dhaka") || "2026-10"
+    monthNow(account?.preferences?.timezone ?? "Asia/Dhaka") || "2026-10",
   );
 
   const q = useAccountQuery(
@@ -161,75 +246,58 @@ export function FinanceScreen() {
   );
   const d = q.data;
 
-  const currency = d?.currency ?? account?.preferences?.currency ?? "BDT";
+  const rep = (d as any)?.report ?? d;
+  const currency = rep?.currency ?? account?.preferences?.currency ?? "BDT";
 
-  // Real or realistic fallback metrics to match screenshot design
-  const incomeDisplay =
-    d?.income && parseFloat(d.income) > 0
-      ? formatCurrency(d.income, currency)
-      : "৳78,000";
+  const incomeDisplay = formatCurrency(rep?.income ?? "0", currency);
+  const expensesDisplay = formatCurrency(rep?.expenses ?? "0", currency);
+  const sadaqahDisplay = formatCurrency(rep?.sadaqah ?? "0", currency);
+  const lifetimeDisplay = formatCurrency(
+    (d as any)?.lifetimeSadaqah ?? rep?.sadaqah ?? "0",
+    currency,
+  );
 
-  const expensesDisplay =
-    d?.expenses && parseFloat(d.expenses) > 0
-      ? formatCurrency(d.expenses, currency)
-      : "৳32,450";
-
-  const sadaqahDisplay =
-    d?.sadaqah && parseFloat(d.sadaqah) > 0
-      ? formatCurrency(d.sadaqah, currency)
-      : "৳2,500";
-
-  // Category breakdown list
   const defaultCategories = [
     {
       name: "Food",
-      amount: "৳12,400",
-      percentage: 58,
       color: "#0F6E56",
       badgeBg: "#DCF5EC",
       Icon: Utensils,
     },
     {
       name: "Bills",
-      amount: "৳8,750",
-      percentage: 44,
       color: "#3B82F6",
       badgeBg: "#EBF5FF",
       Icon: Receipt,
     },
     {
       name: "Transport",
-      amount: "৳6,300",
-      percentage: 32,
       color: "#F59E0B",
       badgeBg: "#FEF3C7",
       Icon: Bus,
     },
     {
       name: "Other",
-      amount: "৳4,990",
-      percentage: 24,
       color: "#8B5CF6",
       badgeBg: "#F3E8FF",
       Icon: MoreHorizontal,
     },
   ];
 
-  // If backend returned category data, format it; otherwise use the realistic defaults
-  const categoriesToRender =
-    d?.categories && d.categories.length > 0
-      ? d.categories.slice(0, 4).map((c, i) => {
-          const fallback = defaultCategories[i % defaultCategories.length]!;
-          return {
-            name: c.category.charAt(0).toUpperCase() + c.category.slice(1).toLowerCase().replace(/_/g, " "),
-            amount: formatCurrency(c.amount, currency),
-            percentage: Math.min(100, Math.max(15, Math.round((parseFloat(c.amount) / (parseFloat(d.expenses || "1") || 1)) * 100))),
-            color: fallback.color,
-            badgeBg: fallback.badgeBg,
-            Icon: fallback.Icon,
-          };
-        })
-      : defaultCategories;
+  const rawCategories = rep?.categories ?? [];
+  const categoriesToRender = rawCategories.map((c: any, i: number) => {
+    const fallback = defaultCategories[i % defaultCategories.length]!;
+    return {
+      name:
+        c.category.charAt(0).toUpperCase() +
+        c.category.slice(1).toLowerCase().replace(/_/g, " "),
+      amount: formatCurrency(c.amount, currency),
+      percentage: percent(c.amount, rep?.expenses || "1"),
+      color: fallback.color,
+      badgeBg: fallback.badgeBg,
+      Icon: fallback.Icon,
+    };
+  });
 
   return (
     <Screen
@@ -247,15 +315,16 @@ export function FinanceScreen() {
             accessibilityRole="button"
             accessibilityLabel="Select month"
             onPress={() => {
-              // Cycle through months or reset to current
-              setMonth((prev) => (prev === "2026-10" ? "2026-09" : "2026-10"));
+              setMonth((prev) => shiftMonth(prev, -1));
             }}
             style={({ pressed }) => [
               styles.monthFilterPill,
               { opacity: pressed ? 0.75 : 1 },
             ]}
           >
-            <Text style={styles.monthFilterText}>{formatMonthLabel(month)}</Text>
+            <Text style={styles.monthFilterText}>
+              {formatMonthLabel(month)}
+            </Text>
             <ChevronDown size={14} color="#64748B" strokeWidth={2} />
           </Pressable>
         </View>
@@ -285,13 +354,17 @@ export function FinanceScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Income"
-          onPress={() => router.push("/transactions?type=INCOME" as any)}
+          onPress={() =>
+            router.push(`/transactions?month=${month}&type=INCOME` as any)
+          }
           style={({ pressed }) => [
             styles.metricCard,
             { opacity: pressed ? 0.95 : 1 },
           ]}
         >
-          <View style={[styles.metricIconCircle, { backgroundColor: "#EBF5FF" }]}>
+          <View
+            style={[styles.metricIconCircle, { backgroundColor: "#EBF5FF" }]}
+          >
             <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <Path
                 d="M7 17L17 7M17 7H9M17 7V15"
@@ -312,13 +385,17 @@ export function FinanceScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Expenses"
-          onPress={() => router.push("/transactions?type=EXPENSE" as any)}
+          onPress={() =>
+            router.push(`/transactions?month=${month}&type=EXPENSE` as any)
+          }
           style={({ pressed }) => [
             styles.metricCard,
             { opacity: pressed ? 0.95 : 1 },
           ]}
         >
-          <View style={[styles.metricIconCircle, { backgroundColor: "#FEECEC" }]}>
+          <View
+            style={[styles.metricIconCircle, { backgroundColor: "#FEECEC" }]}
+          >
             <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <Path
                 d="M7 7L17 17M17 17V9M17 17H9"
@@ -342,11 +419,15 @@ export function FinanceScreen() {
           <Text style={styles.cardTitle}>Income vs expenses</Text>
           <View style={styles.legendRow}>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: "#3B82F6" }]} />
+              <View
+                style={[styles.legendDot, { backgroundColor: "#3B82F6" }]}
+              />
               <Text style={styles.legendText}>Income</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: "#EF4444" }]} />
+              <View
+                style={[styles.legendDot, { backgroundColor: "#EF4444" }]}
+              />
               <Text style={styles.legendText}>Expenses</Text>
             </View>
           </View>
@@ -361,40 +442,55 @@ export function FinanceScreen() {
           Spending by category
         </Text>
 
-        <View style={styles.categoriesList}>
-          {categoriesToRender.map((cat) => (
-            <View key={cat.name} style={styles.categoryRow}>
-              {/* Icon Badge */}
-              <View
-                style={[
-                  styles.categoryIconBadge,
-                  { backgroundColor: cat.badgeBg },
-                ]}
-              >
-                <cat.Icon size={18} color={cat.color} strokeWidth={1.8} />
-              </View>
+        {categoriesToRender.length === 0 ? (
+          <Text style={{ color: "#64748B", fontSize: 14 }}>
+            No spending recorded in categories this month.
+          </Text>
+        ) : (
+          <View style={styles.categoriesList}>
+            {categoriesToRender.map(
+              (cat: {
+                name: string;
+                amount: string;
+                percentage: number;
+                color: string;
+                badgeBg: string;
+                Icon: any;
+              }) => (
+                <View key={cat.name} style={styles.categoryRow}>
+                  {/* Icon Badge */}
+                  <View
+                    style={[
+                      styles.categoryIconBadge,
+                      { backgroundColor: cat.badgeBg },
+                    ]}
+                  >
+                    <cat.Icon size={18} color={cat.color} strokeWidth={1.8} />
+                  </View>
 
-              {/* Label */}
-              <Text style={styles.categoryLabel}>{cat.name}</Text>
+                  {/* Label */}
+                  <Text style={styles.categoryLabel}>{cat.name}</Text>
 
-              {/* Progress Bar Track & Fill */}
-              <View style={styles.progressTrack}>
-                <View
-                  style={[
-                    styles.progressFill,
-                    {
-                      width: `${cat.percentage}%`,
-                      backgroundColor: cat.color,
-                    },
-                  ]}
-                />
-              </View>
+                  {/* Progress Bar Track & Fill */}
+                  <View style={styles.progressTrack}>
+                    <View
+                      style={[
+                        styles.progressFill,
+                        {
+                          width: `${cat.percentage}%`,
+                          backgroundColor: cat.color,
+                        },
+                      ]}
+                    />
+                  </View>
 
-              {/* Amount */}
-              <Text style={styles.categoryAmount}>{cat.amount}</Text>
-            </View>
-          ))}
-        </View>
+                  {/* Amount */}
+                  <Text style={styles.categoryAmount}>{cat.amount}</Text>
+                </View>
+              ),
+            )}
+          </View>
+        )}
       </View>
 
       {/* 6. Sadaqah & All Transactions Card */}
@@ -416,7 +512,7 @@ export function FinanceScreen() {
         {/* Middle: Lifetime */}
         <View style={styles.lifetimeCol}>
           <Text style={styles.sadaqahLabel}>Lifetime</Text>
-          <Text style={styles.sadaqahValue}>৳18,400</Text>
+          <Text style={styles.sadaqahValue}>{lifetimeDisplay}</Text>
         </View>
 
         {/* Right: All transactions link */}

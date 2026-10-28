@@ -1,10 +1,16 @@
-# External launch gates — source completion is not release certification
+# Production promotion gate
 
-- Configure real Neon, Cloud Run, Secret Manager/IAM, Upstash, mail and market provider accounts; select and benchmark actual regions. API and scheduled job use separate secret sets. Verify min 0, HTTPS, quotas, two successful job executions, outages and Cloud Run/Neon connection budgets in staging.
-- Supply official icon/branding, organization/legal/support details, real bundle identifiers, EAS/store signing and OAuth client configuration. Test email, Google/Apple, deletion, deep links and session expiry on signed native development builds.
-- Obtain qualified Islamic finance review of the versioned calculation policy and tested expected outputs. Install verified, legally redistributable Quran/translation and dua data with exact provenance and hash. Neither policy approval nor religious content is generated or silently assumed.
-- Rehearse backup restoration, deletion replay and revocation after restore; approve actual retention/RPO/RTO policy. Run measured load, privacy/security review and all Android/iOS/device/accessibility scenarios before production promotion.
-- Build/scan/run the nonroot Docker image and inspect its contents. Docker and gcloud were unavailable locally. CI/Cloud Build scripts are supplied, but their existence is not deployment evidence.
-- Resolve or formally review the two high-severity findings in the pinned Expo CLI dependency chain: node-forge 1.4.0 (GHSA-86w9-cpqp-85rv, no published patch at audit time) and CLI Zod 3.25.76 (GHSA-mrhx-c7xc-m3w5). The app/API's direct Zod is 4.6.7. Do not force an unsupported major override or mark the audit clean. See docs/DEPENDENCY_REVIEW.md.
+Do not promote these source updates solely because local tests or Hermes exports pass. The exact candidate still needs:
 
-Source-safe unavailable states are intentional while these externally supplied prerequisites are absent. No test result in this archive claims actual cloud deployment, native installation, religious approval or content rights approval.
+1. A qualified named reviewer’s approved zakat and prayer interval policies, supported cases and local timetable validation. Phase 1 gating remains intact.
+2. Content/legal approval for Tanzil, QuranEnc and the selected MP3Quran recordings, with the included notices and update obligations. Dua audio remains unavailable until its separate permissions are verified. A Bengali Quran translation is not installed.
+3. Real branding, native package/bundle identifiers, EAS project/signing, privacy/terms/support details and store declarations.
+4. Signed Android AAB and iOS IPA installed on representative small phones/tablets. Test RTL Arabic, Bangla, dark/light, large text, screen readers, keyboard/forms, modal focus, notification permissions, SQLCipher, biometric fallback, recording interruptions, route changes, headphones/Bluetooth, lock screen, background, termination and low storage.
+5. Actual staging Cloud Run/Neon/Upstash jobs/IAM/secrets, quota and failure recovery; cold starts, pool waits, p50/p95/p99, errors/completions and representative data/load; delivered alerts and traffic rollback.
+6. Provider quota/timeouts/stale source cases and market closures on the deployed candidate; do not call an indicative source-fetch timestamp an exchange trade timestamp.
+7. A current signed erasure ledger outside the database recovery boundary, restored-session revocation, real cloud restoration, deletion replay, ownership validation, RPO/RTO and incident contacts. Local PostgreSQL rehearsal does not verify a Neon backup configuration.
+8. A controlled beta with consented representative users and no unresolved correctness blockers. Assign accountable named people for release, religion/content, security/privacy, infrastructure/on-call and beta support; names were not supplied here.
+
+Use `docs/release-evidence.template.json` as a schema only. Its checks start false. Fill real owner names, evidence URLs and timestamps after execution, bind the current source fingerprint, and provide actual local candidate artifacts with kind, name, localPath and SHA256. Frontend requires `android-aab` and `ios-ipa`; backend requires `oci-image`. The checker verifies hashes of the actual bytes and rejects stale/wrong-source evidence. It does not cryptographically sign binaries or independently validate a reviewer’s qualifications.
+
+`pnpm release:check` runs a fresh audit of the current complete dependency graph, then checks evidence and production prerequisites. Missing evidence intentionally fails. Historical audit JSON is not accepted as current release proof.

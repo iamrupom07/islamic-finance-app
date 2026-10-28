@@ -12,6 +12,7 @@ export const assetDto = (r: Asset) => ({
   ...r,
   declaredValue: r.declaredValue?.toString() ?? null,
   weightGrams: r.weightGrams?.toString() ?? null,
+  weightQuantity: r.weightQuantity?.toFixed(12) ?? null,
   purity: r.purity?.toString() ?? null,
   valuedOn: r.valuedOn.toISOString().slice(0, 10),
   createdAt: r.createdAt.toISOString(),
@@ -22,7 +23,9 @@ function normalize(input: z.infer<typeof assetInput>) {
     if (
       !input.declaredValue ||
       input.weightGrams != null ||
-      input.purity != null
+      input.purity != null ||
+      input.weightQuantity != null ||
+      input.weightUnit != null
     )
       throw new AppError(
         422,
@@ -50,6 +53,31 @@ function normalize(input: z.infer<typeof assetInput>) {
       "BUSINESS_RULE_VIOLATION",
       "Metal valuation requires weight and purity, with no manual value.",
     );
+  if ((input.weightQuantity == null) !== (input.weightUnit == null))
+    throw new AppError(
+      422,
+      "WEIGHT_CONVERSION_INVALID",
+      "Supply both original quantity and weight unit.",
+    );
+  if (input.weightQuantity && input.weightUnit) {
+    const factors = {
+      g: "1",
+      bhori: "11.664",
+      tola: "11.6638038",
+      ozt: "31.1034768",
+    };
+    if (
+      !new D(input.weightQuantity)
+        .mul(factors[input.weightUnit])
+        .toDecimalPlaces(6)
+        .eq(input.weightGrams!)
+    )
+      throw new AppError(
+        422,
+        "WEIGHT_CONVERSION_INVALID",
+        "Normalized grams do not match the selected quantity and unit.",
+      );
+  }
   return {
     ...input,
     declaredValue: null,
@@ -137,10 +165,13 @@ export class AssetService {
         const b = assetInput.parse({
           type: prior.type,
           label: prior.label,
+          note: prior.note,
           currency: prior.currency,
           valuationMode: prior.valuationMode,
           declaredValue: prior.declaredValue?.toString() ?? null,
           weightGrams: prior.weightGrams?.toString() ?? null,
+          weightQuantity: prior.weightQuantity?.toFixed(12) ?? null,
+          weightUnit: prior.weightUnit,
           purity: prior.purity?.toString() ?? null,
           valuedOn: prior.valuedOn.toISOString().slice(0, 10),
           ...fields,

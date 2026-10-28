@@ -1,3 +1,6 @@
+import { PrivateModal as Modal } from "../core/privacy/PrivateModal";
+import { usePlayerLayout } from "../core/audio/layout";
+import { usePrivacy } from "../core/privacy/PrivacyProvider";
 import React, {
   useEffect,
   useRef,
@@ -14,13 +17,17 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Modal,
   AccessibilityInfo,
   findNodeHandle,
   StyleSheet,
   RefreshControl,
 } from "react-native";
-import type { TextStyle, ViewStyle, StyleProp, TextInputProps } from "react-native";
+import type {
+  TextStyle,
+  ViewStyle,
+  StyleProp,
+  TextInputProps,
+} from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -390,6 +397,7 @@ export function Screen({
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const online = useOnline();
+  const playerLayout = usePlayerLayout();
   return (
     <SafeAreaView
       edges={["top", "left", "right"]}
@@ -417,7 +425,11 @@ export function Screen({
               alignSelf: "center",
               padding: 16,
               gap: 16,
-              paddingBottom: (tabs ? 112 : 24) + insets.bottom,
+              paddingBottom:
+                (tabs ? playerLayout.dockHeight + 36 : 24) +
+                insets.bottom +
+                playerLayout.playerHeight +
+                (playerLayout.playerHeight ? 16 : 0),
             },
             contentContainerStyle,
           ]}
@@ -458,6 +470,7 @@ export function Money({
   size?: number;
 }) {
   const { locale, colors } = useTheme();
+  const { hidden } = usePrivacy();
   return (
     <Copy
       medium
@@ -472,7 +485,7 @@ export function Money({
               : colors.ink,
       }}
     >
-      {sign + formatMoney(value, currency, locale)}
+      {hidden ? "••••" : sign + formatMoney(value, currency, locale)}
     </Copy>
   );
 }
@@ -555,8 +568,18 @@ export function QueryState({
         }}
       />
     );
+  const saved = query.data as
+    { __offline?: boolean; __capturedAt?: string } | undefined;
   return (
     <>
+      {saved?.__offline ? (
+        <Card>
+          <Copy>Read-only saved data</Copy>
+          <Copy
+            muted
+          >{`Captured: ${saved.__capturedAt ?? "unavailable"}`}</Copy>
+        </Card>
+      ) : null}
       {query.error ? (
         <ErrorRetry
           error={query.error}
@@ -604,8 +627,20 @@ export function ConfirmSheet({
   const heading = useRef<React.ComponentRef<typeof View>>(null);
   useEffect(() => {
     if (visible) {
-      const id = findNodeHandle(heading.current);
-      if (id) AccessibilityInfo.setAccessibilityFocus(id);
+      if (Platform.OS !== "web") {
+        try {
+          const id = findNodeHandle(heading.current);
+          if (id) AccessibilityInfo.setAccessibilityFocus(id);
+        } catch {
+          // ignore if unavailable on native
+        }
+      } else {
+        try {
+          (heading.current as any)?.focus?.();
+        } catch {
+          // ignore on web
+        }
+      }
     }
   }, [visible]);
   return (

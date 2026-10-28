@@ -1,0 +1,72 @@
+{
+  "sourceFingerprint": "REPLACE_WITH_CURRENT_FINGERPRINT",
+  "artifacts": [],
+  "checks": {
+    "correctness": {
+      "passed": false,
+      "owner": "",
+      "testedAt": null,
+      "evidenceUrl": ""
+    },
+    "religiousReview": {
+      "passed": false,
+      "owner": "",
+      "testedAt": null,
+      "evidenceUrl": ""
+    },
+    "contentRights": {
+      "passed": false,
+      "owner": "",
+      "testedAt": null,
+      "evidenceUrl": ""
+    },
+    "signedDevices": {
+      "passed": false,
+      "owner": "",
+      "testedAt": null,
+      "evidenceUrl": ""
+    },
+    "security": {
+      "passed": false,
+      "owner": "",
+      "testedAt": null,
+      "evidenceUrl": ""
+    },
+    "providers": {
+      "passed": false,
+      "owner": "",
+      "testedAt": null,
+      "evidenceUrl": ""
+    },
+    "performance": {
+      "passed": false,
+      "owner": "",
+      "testedAt": null,
+      "evidenceUrl": ""
+    },
+    "operations": {
+      "passed": false,
+      "owner": "",
+      "testedAt": null,
+      "evidenceUrl": ""
+    },
+    "recovery": {
+      "passed": false,
+      "owner": "",
+      "testedAt": null,
+      "evidenceUrl": ""
+    },
+    "controlledBeta": {
+      "passed": false,
+      "owner": "",
+      "testedAt": null,
+      "evidenceUrl": ""
+    },
+    "storeLegal": {
+      "passed": false,
+      "owner": "",
+      "testedAt": null,
+      "evidenceUrl": ""
+    }
+  }
+}
