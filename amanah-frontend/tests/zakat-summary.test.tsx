@@ -197,4 +197,49 @@ describe("ZakatSummaryCard", () => {
     fireEvent.press(recordBtn);
     expect(mockPush).toHaveBeenCalledWith("/zakat/record-payment");
   });
+
+  it("renders BAJUS BD gold & silver rates and supports toggling benchmark", async () => {
+    const zakat: Zakat = {
+      status: "BELOW_NISAB",
+      currency: "BDT",
+      estimate: "0.00",
+      netEligibleWealth: "150000.00",
+      eligibleAssets: "150000.00",
+      eligibleReceivables: "0.00",
+      eligibleLiabilities: "0.00",
+      nisabValue: "212500.00",
+      nisabStandard: "SILVER",
+      nisabGrams: "612.36",
+      annualRate: "0.025",
+      policyVersion: "1.0",
+      policyId: "standard",
+      sourceAt: null,
+      source: null,
+      rateSetId: null,
+      isStale: false,
+      period: null,
+      lines: [],
+      reasons: [],
+      disclaimer: "",
+      fingerprint: "abc",
+    };
+
+    const screen = await render(<ZakatSummaryCard zakat={zakat} />);
+    expect(screen.getByText(/Gold 22K:/)).toBeTruthy();
+    expect(screen.getByText(/৳223,074\/v/)).toBeTruthy();
+    expect(screen.getByText(/Silver 22K:/)).toBeTruthy();
+    expect(screen.getByText(/৳2,566\/v/)).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Official BAJUS Rates (Bangladesh Jewellers Association)",
+      ),
+    ).toBeTruthy();
+
+    const bajusBtn = screen.getByRole("button", { name: "BAJUS (BD Market)" });
+    expect(bajusBtn).toBeTruthy();
+    await fireEvent.press(bajusBtn);
+    expect(
+      screen.getByText(/Exceeds silver threshold by ৳15,281.00/),
+    ).toBeTruthy();
+  });
 });

@@ -209,3 +209,101 @@ export function quranVerseTrack(
     ayah,
   });
 }
+export function getDuaRecordings(
+  dua: ContentBundle["payload"]["duas"][number],
+): Array<{
+  url: string;
+  durationSeconds?: number;
+  variationId?: string;
+  variationLabel?: string;
+}> {
+  const results: Array<{
+    url: string;
+    durationSeconds?: number;
+    variationId?: string;
+    variationLabel?: string;
+  }> = [];
+  if (Array.isArray(dua.recordings)) {
+    for (const r of dua.recordings) {
+      if (r.url) {
+        results.push({
+          url: r.url,
+          variationId: "default",
+          variationLabel: r.title,
+        });
+      }
+    }
+  }
+  const ctx = dua.context as
+    | {
+        variations?: Array<{
+          id?: string;
+          label?: string;
+          condition?: string;
+          steps?: Array<{
+            recordings?: Array<{
+              url?: string;
+              durationSeconds?: number;
+            }>;
+          }>;
+        }>;
+      }
+    | undefined;
+  if (ctx && Array.isArray(ctx.variations)) {
+    for (const v of ctx.variations) {
+      if (!v.steps) continue;
+      for (const s of v.steps) {
+        if (Array.isArray(s.recordings)) {
+          for (const r of s.recordings) {
+            if (
+              r.url &&
+              typeof r.url === "string" &&
+              r.url.startsWith("https://")
+            ) {
+              results.push({
+                url: r.url,
+                durationSeconds: r.durationSeconds,
+                variationId: v.id,
+                variationLabel: v.label || v.condition || v.id,
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+  return results;
+}
+export function hasDuaAudio(
+  dua: ContentBundle["payload"]["duas"][number],
+): boolean {
+  return getDuaRecordings(dua).length > 0;
+}
+export function duaTrack(
+  b: ContentBundle,
+  duaId: string,
+  recordingIndex = 0,
+): Track {
+  const d = b.payload.duas.find((item) => item.id === duaId);
+  if (!d) throw Error("TRACK_UNAVAILABLE");
+  const recordings = getDuaRecordings(d);
+  const rec = recordings[recordingIndex];
+  if (!rec) throw Error("TRACK_UNAVAILABLE");
+  const suffix = recordingIndex > 0 ? `-${recordingIndex + 1}` : "";
+  const title =
+    recordings.length > 1 && rec.variationLabel
+      ? `${d.title} (${rec.variationLabel})`
+      : d.title;
+  return trackSchema.parse({
+    id: `dua-${d.id}${suffix}`,
+    title,
+    artist: "Muhammad Jumah",
+    url: rec.url,
+    edition: b.edition,
+    rights: "https://opendua.org",
+    streamAllowed: true,
+    downloadAllowed: true,
+    kind: "DUA",
+    duaId: d.id,
+  });
+}

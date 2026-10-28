@@ -40,6 +40,7 @@ import { useAccountQuery, useAccountMutation } from "../../core/api/hooks";
 import { useAuth } from "../../core/auth/AuthProvider";
 import type { Zakat } from "../../core/api/types";
 import { localDate } from "../../core/i18n/formatters";
+import { getBdNisab, type PricingBenchmark } from "../market/bd-rates";
 import {
   positive,
   date,
@@ -168,21 +169,42 @@ export function ZakatBreakdown({ summary: s }: { summary: Zakat }) {
     ? `${(parseFloat(s.annualRate) * 100).toFixed(1)}%`
     : "2.5%";
 
-  const nisabValueFormatted = formatCurrency(s.nisabValue ?? "0", currency);
+  const isBdCurrency = currency === "BDT";
+  const [benchmark, setBenchmark] = useState<PricingBenchmark>("BAJUS");
+  const isBajusActive = isBdCurrency && benchmark === "BAJUS";
+  const bdNisabInfo = getBdNisab(s.nisabStandard);
 
-  const nisabStandardName =
-    s.nisabStandard === "GOLD" ? "Gold standard" : "Silver standard";
+  const effectiveNisabFormatted = isBajusActive
+    ? bdNisabInfo.formattedNisab
+    : formatCurrency(s.nisabValue ?? "0", currency);
 
-  const nisabGramsText = s.nisabGrams
-    ? `Based on ${s.nisabGrams} grams of ${s.nisabStandard === "GOLD" ? "gold" : "silver"}`
-    : "Based on pure metal threshold";
+  const effectiveNisabStandardName = isBajusActive
+    ? s.nisabStandard === "GOLD"
+      ? "Gold standard · BAJUS BD Market"
+      : "Silver standard · BAJUS BD Market"
+    : s.nisabStandard === "GOLD"
+      ? "Gold standard"
+      : "Silver standard";
+
+  const effectiveNisabGramsText = isBajusActive
+    ? s.nisabStandard === "GOLD"
+      ? "Based on 87.48 grams (7.5 vori) pure gold @ ৳20,879/g"
+      : "Based on 612.36 grams (52.5 vori) silver @ ৳220/g"
+    : s.nisabGrams
+      ? `Based on ${s.nisabGrams} grams of ${s.nisabStandard === "GOLD" ? "gold" : "silver"}`
+      : "Based on pure metal threshold";
+
+  const netWealthNum = parseFloat(s.netEligibleWealth ?? "0");
+  const isBelowNisab = s.status === "BELOW_NISAB";
+  const isEffectiveBelowNisab = isBajusActive
+    ? netWealthNum < bdNisabInfo.nisabBDT
+    : isBelowNisab;
 
   const startHijri = s.period?.startHijri || "Not set";
   const startDateCivil = s.period?.start || "Tap to set anniversary";
   const dueHijri = s.period?.endHijri || "—";
   const dueDateCivil = s.period?.end || "1 lunar year (Hawl)";
 
-  const isBelowNisab = s.status === "BELOW_NISAB";
   const isPotentiallyDue = s.status === "POTENTIALLY_DUE";
 
   const metalPricePerGram =
@@ -308,30 +330,86 @@ export function ZakatBreakdown({ summary: s }: { summary: Zakat }) {
           </Pressable>
         </View>
 
+        {isBdCurrency ? (
+          <View style={styles.benchmarkRowInCard}>
+            <Text style={styles.benchmarkLabelInCard}>Pricing benchmark:</Text>
+            <View style={{ flexDirection: "row", gap: 6 }}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="BAJUS (BD Market)"
+                onPress={() => setBenchmark("BAJUS")}
+                style={[
+                  styles.benchmarkPill,
+                  benchmark === "BAJUS"
+                    ? styles.benchmarkPillActive
+                    : styles.benchmarkPillInactive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.benchmarkPillText,
+                    benchmark === "BAJUS" && styles.benchmarkPillTextActive,
+                  ]}
+                >
+                  BAJUS (BD)
+                </Text>
+              </Pressable>
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="International Spot"
+                onPress={() => setBenchmark("INTERNATIONAL")}
+                style={[
+                  styles.benchmarkPill,
+                  benchmark === "INTERNATIONAL"
+                    ? styles.benchmarkPillActive
+                    : styles.benchmarkPillInactive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.benchmarkPillText,
+                    benchmark === "INTERNATIONAL" &&
+                      styles.benchmarkPillTextActive,
+                  ]}
+                >
+                  Spot
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
+
         <View style={styles.nisabContentRow}>
           <View style={styles.nisabLeft}>
             <View style={styles.bullionBadge}>
               <BullionBarsIcon size={22} color="#0F6E56" />
             </View>
             <View style={styles.nisabTextCol}>
-              <Text style={styles.nisabStandardTitle}>{nisabStandardName}</Text>
-              <Text style={styles.nisabValueRow}>
-                <Text style={styles.nisabValueBold}>{nisabValueFormatted}</Text>
+              <Text style={styles.nisabStandardTitle}>
+                {effectiveNisabStandardName}
               </Text>
-              <Text style={styles.nisabGramsSubtext}>{nisabGramsText}</Text>
+              <Text style={styles.nisabValueRow}>
+                <Text style={styles.nisabValueBold}>
+                  {effectiveNisabFormatted}
+                </Text>
+              </Text>
+              <Text style={styles.nisabGramsSubtext}>
+                {effectiveNisabGramsText}
+              </Text>
             </View>
           </View>
 
           <View
             style={[
               styles.aboveNisabPill,
-              isBelowNisab && { backgroundColor: "#F1F5F9" },
+              isEffectiveBelowNisab && { backgroundColor: "#F1F5F9" },
             ]}
           >
             <View
               style={[
                 styles.checkCircle,
-                isBelowNisab && { backgroundColor: "#64748B" },
+                isEffectiveBelowNisab && { backgroundColor: "#64748B" },
               ]}
             >
               <Check size={11} color="#FFFFFF" strokeWidth={3} />
@@ -339,34 +417,63 @@ export function ZakatBreakdown({ summary: s }: { summary: Zakat }) {
             <Text
               style={[
                 styles.aboveNisabText,
-                isBelowNisab && { color: "#64748B" },
+                isEffectiveBelowNisab && { color: "#64748B" },
               ]}
             >
-              {isBelowNisab ? "Below nisab" : "Above nisab"}
+              {isEffectiveBelowNisab ? "Below nisab" : "Above nisab"}
             </Text>
           </View>
         </View>
 
         <View style={styles.cardDivider} />
 
-        <View style={styles.cachedPriceRow}>
-          <Text style={styles.cachedPriceLabel}>{standardLabel}</Text>
-          <View style={styles.cachedPriceValueCol}>
-            {metalPricePerGram ? (
+        {isBajusActive ? (
+          <View style={{ gap: 6 }}>
+            <View style={styles.cachedPriceRow}>
+              <Text style={styles.cachedPriceLabel}>Gold 24K pure</Text>
               <Text style={styles.cachedPriceValue}>
-                <Text
-                  style={{ fontFamily: "OutfitMedium" }}
-                >{`${currencySym}${metalPricePerGram}`}</Text>{" "}
-                per gram
+                <Text style={{ fontFamily: "OutfitMedium" }}>৳20,879</Text> /g
+                (৳243,530 /vori)
               </Text>
-            ) : null}
-            {s.sourceAt ? (
-              <Text style={styles.cachedPriceUpdated}>
-                {`Updated: ${s.sourceAt.slice(0, 10)}`}
+            </View>
+            <View style={styles.cachedPriceRow}>
+              <Text style={styles.cachedPriceLabel}>Gold 22K jewelry</Text>
+              <Text style={styles.cachedPriceValue}>
+                <Text style={{ fontFamily: "OutfitMedium" }}>৳19,125</Text> /g
+                (৳223,074 /vori)
               </Text>
-            ) : null}
+            </View>
+            <View style={styles.cachedPriceRow}>
+              <Text style={styles.cachedPriceLabel}>Silver 22K hallmark</Text>
+              <Text style={styles.cachedPriceValue}>
+                <Text style={{ fontFamily: "OutfitMedium" }}>৳220</Text> /g
+                (৳2,566 /vori)
+              </Text>
+            </View>
+            <Text style={styles.cachedPriceUpdated}>
+              Source: BAJUS (www.bajus.org/gold-price) · Official BD Market
+            </Text>
           </View>
-        </View>
+        ) : (
+          <View style={styles.cachedPriceRow}>
+            <Text style={styles.cachedPriceLabel}>{standardLabel}</Text>
+            <View style={styles.cachedPriceValueCol}>
+              {metalPricePerGram ? (
+                <Text style={styles.cachedPriceValue}>
+                  <Text
+                    style={{ fontFamily: "OutfitMedium" }}
+                  >{`${currencySym}${metalPricePerGram}`}</Text>{" "}
+                  per gram
+                </Text>
+              ) : null}
+              {s.sourceAt ? (
+                <Text style={styles.cachedPriceUpdated}>
+                  {`Updated: ${s.sourceAt.slice(0, 10)}`}
+                </Text>
+              ) : null}
+            </View>
+          </View>
+        )}
       </View>
 
       {/* 4. Zakat Anniversary Card */}
@@ -681,6 +788,43 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 12,
+  },
+  benchmarkRowInCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EDF2EE",
+  },
+  benchmarkLabelInCard: {
+    fontFamily: "Outfit",
+    fontSize: 12,
+    color: "#64748B",
+  },
+  benchmarkPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  benchmarkPillActive: {
+    backgroundColor: "#0F6E56",
+    borderColor: "#0F6E56",
+  },
+  benchmarkPillInactive: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0",
+  },
+  benchmarkPillText: {
+    fontFamily: "OutfitMedium",
+    fontSize: 11,
+    color: "#64748B",
+  },
+  benchmarkPillTextActive: {
+    color: "#FFFFFF",
+    fontWeight: "700",
   },
   changeLinkText: {
     fontFamily: "OutfitMedium",

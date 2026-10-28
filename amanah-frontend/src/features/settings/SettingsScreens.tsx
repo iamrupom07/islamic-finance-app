@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Linking, Switch, AppState, Platform } from "react-native";
+import {
+  Linking,
+  Switch,
+  AppState,
+  Platform,
+  View,
+  Text,
+  Pressable,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import * as Notifications from "expo-notifications";
@@ -27,6 +35,7 @@ import { requestReminderPermission } from "../../core/notifications/scheduler";
 import { shareExport } from "../../core/storage/export-file";
 import { socialProof } from "../auth/social";
 import { useContent } from "../../content/ContentProvider";
+import type { PricingBenchmark } from "../market/bd-rates";
 type Patch =
   paths["/v1/me/preferences"]["patch"]["requestBody"]["content"]["application/json"];
 function usePreferenceSave() {
@@ -288,6 +297,7 @@ export function NisabSettingsScreen() {
   const [anchor, setAnchor] = useState(p.hijriAnchor ?? "");
   const [continuity, setContinuity] = useState(p.continuityConfirmed);
   const [confirm, setConfirm] = useState(false);
+  const [benchmark, setBenchmark] = useState<PricingBenchmark>("BAJUS");
   const save = usePreferenceSave();
   const q = useQuery({
     queryKey: ["catalog"],
@@ -301,6 +311,214 @@ export function NisabSettingsScreen() {
   }, [q.data?.policies, policy]);
   return (
     <Screen title="Nisab standard" back>
+      {p.currency === "BDT" ? (
+        <Card>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 12,
+            }}
+          >
+            <Copy medium size={16}>
+              Live BD Metal Rates & Nisab
+            </Copy>
+            <View style={{ flexDirection: "row", gap: 6 }}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="BAJUS (BD)"
+                onPress={() => setBenchmark("BAJUS")}
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 14,
+                  backgroundColor:
+                    benchmark === "BAJUS" ? "#0F6E56" : "#F1F5F9",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: "700",
+                    color: benchmark === "BAJUS" ? "#FFFFFF" : "#64748B",
+                  }}
+                >
+                  BAJUS (BD)
+                </Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Spot"
+                onPress={() => setBenchmark("INTERNATIONAL")}
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 14,
+                  backgroundColor:
+                    benchmark === "INTERNATIONAL" ? "#0F6E56" : "#F1F5F9",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: "700",
+                    color:
+                      benchmark === "INTERNATIONAL" ? "#FFFFFF" : "#64748B",
+                  }}
+                >
+                  Spot
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+
+          <View
+            style={{
+              backgroundColor: "#F8FAF9",
+              borderRadius: 10,
+              padding: 10,
+              marginBottom: 12,
+              borderWidth: 1,
+              borderColor: "#E2E8F0",
+              gap: 6,
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <Copy muted size={13}>
+                Gold 24K pure
+              </Copy>
+              <Copy medium size={13}>
+                <Text style={{ fontWeight: "700" }}>৳20,879</Text> /g (৳243,530
+                /vori)
+              </Copy>
+            </View>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <Copy muted size={13}>
+                Gold 22K jewelry
+              </Copy>
+              <Copy medium size={13}>
+                <Text style={{ fontWeight: "700" }}>৳19,125</Text> /g (৳223,074
+                /vori)
+              </Copy>
+            </View>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <Copy muted size={13}>
+                Silver 22K hallmark
+              </Copy>
+              <Copy medium size={13}>
+                <Text style={{ fontWeight: "700" }}>৳220</Text> /g (৳2,566
+                /vori)
+              </Copy>
+            </View>
+            <Copy muted size={11}>
+              Official BAJUS Rates (Bangladesh Jewellers Association)
+            </Copy>
+          </View>
+
+          <View style={{ gap: 8, marginBottom: 6 }}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Select Silver Nisab standard"
+              onPress={() => setStandard("SILVER")}
+              style={{
+                padding: 12,
+                borderRadius: 12,
+                borderWidth: 2,
+                borderColor: standard === "SILVER" ? "#0F6E56" : "#E2E8F0",
+                backgroundColor: standard === "SILVER" ? "#F0FDF4" : "#FFFFFF",
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <View style={{ flex: 1, paddingRight: 8 }}>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontWeight: "700",
+                      color: "#0F172A",
+                    }}
+                  >
+                    Silver Standard (612.36g · 52.5 vori)
+                  </Text>
+                  <Text
+                    style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}
+                  >
+                    Recommended for maximum caution
+                  </Text>
+                </View>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: "800",
+                    color: "#0F6E56",
+                  }}
+                >
+                  ৳134,719
+                </Text>
+              </View>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Select Gold Nisab standard"
+              onPress={() => setStandard("GOLD")}
+              style={{
+                padding: 12,
+                borderRadius: 12,
+                borderWidth: 2,
+                borderColor: standard === "GOLD" ? "#0F6E56" : "#E2E8F0",
+                backgroundColor: standard === "GOLD" ? "#F0FDF4" : "#FFFFFF",
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <View style={{ flex: 1, paddingRight: 8 }}>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontWeight: "700",
+                      color: "#0F172A",
+                    }}
+                  >
+                    Gold Standard (87.48g · 7.5 vori)
+                  </Text>
+                  <Text
+                    style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}
+                  >
+                    Pure gold baseline
+                  </Text>
+                </View>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: "800",
+                    color: "#0F6E56",
+                  }}
+                >
+                  ৳1,826,479
+                </Text>
+              </View>
+            </Pressable>
+          </View>
+        </Card>
+      ) : null}
       <Card>
         <Choice
           label="Nisab standard"

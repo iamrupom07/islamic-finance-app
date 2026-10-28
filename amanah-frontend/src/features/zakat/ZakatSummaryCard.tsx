@@ -11,6 +11,7 @@ import {
 import { useTheme } from "../../design-system/ThemeProvider";
 import type { Zakat } from "../../core/api/types";
 import { periodProgress } from "../finance/value-tools";
+import { getBdNisab, type PricingBenchmark } from "../market/bd-rates";
 
 export function SproutWhiteIcon({ size = 22 }: { size?: number }) {
   return (
@@ -66,39 +67,77 @@ export function ZakatSummaryCard({ zakat, isTablet }: ZakatSummaryCardProps) {
 
   const status = zakat?.status ?? "CALCULATION_UNAVAILABLE";
   const currency = zakat?.currency ?? "BDT";
-  const estimate = zakat?.estimate;
+  const isBdCurrency = currency === "BDT";
+  const [benchmark, setBenchmark] = React.useState<PricingBenchmark>(
+    zakat?.nisabValue ? "INTERNATIONAL" : "BAJUS",
+  );
+
+  const rawEstimate = zakat?.estimate;
   const netWealth = zakat?.netEligibleWealth;
   const nisabValue = zakat?.nisabValue;
   const nisabStandard = zakat?.nisabStandard ?? "SILVER";
   const nisabGrams = zakat?.nisabGrams;
 
-  const hasEstimate = estimate != null && parseFloat(estimate) > 0;
-  const isPotentiallyDue = status === "POTENTIALLY_DUE";
-  const isYearInProgress = status === "YEAR_IN_PROGRESS";
-  const isBelowNisab = status === "BELOW_NISAB";
-  const isNoAssets = status === "NO_ASSETS";
-  const isUnavailable =
-    status === "CALCULATION_UNAVAILABLE" || status === "DATA_STALE";
+  const isBajusActive = isBdCurrency && benchmark === "BAJUS";
+  const bdNisabInfo = getBdNisab(nisabStandard);
 
-  const estimateFormatted = formatCurrency(estimate ?? "0", currency);
+  const effectiveNisabValue = isBajusActive
+    ? bdNisabInfo.nisabBDT.toString()
+    : nisabValue;
+
+  const effectiveNisabFormatted = isBajusActive
+    ? bdNisabInfo.formattedNisab
+    : nisabValue != null
+      ? formatCurrency(nisabValue, currency)
+      : null;
+
+  const standardName = nisabStandard === "GOLD" ? "Gold" : "Silver";
+  const effectiveGramsLabel = isBajusActive
+    ? nisabStandard === "GOLD"
+      ? "87.48g · 7.5 vori"
+      : "612.36g · 52.5 vori"
+    : nisabGrams
+      ? `${nisabGrams}g`
+      : nisabStandard === "GOLD"
+        ? "87.48g"
+        : "612.36g";
+
+  let isBelowNisab = status === "BELOW_NISAB";
+  let isPotentiallyDue = status === "POTENTIALLY_DUE";
+  const isYearInProgress = status === "YEAR_IN_PROGRESS";
+  let hasEstimate = rawEstimate != null && parseFloat(rawEstimate) > 0;
+  const isNoAssets = status === "NO_ASSETS";
+  let isUnavailable =
+    status === "CALCULATION_UNAVAILABLE" || status === "DATA_STALE";
+  let estimateFormatted = formatCurrency(rawEstimate ?? "0", currency);
+
+  if (isBajusActive && netWealth != null) {
+    const netNum = parseFloat(netWealth);
+    if (!isNaN(netNum)) {
+      if (netNum < bdNisabInfo.nisabBDT) {
+        isBelowNisab = true;
+        isPotentiallyDue = false;
+        estimateFormatted = formatCurrency("0", currency);
+      } else {
+        isBelowNisab = false;
+        if (!hasEstimate) {
+          const bdEstimate = (netNum * 0.025).toFixed(2);
+          estimateFormatted = formatCurrency(bdEstimate, currency);
+          hasEstimate = true;
+          isUnavailable = false;
+        }
+      }
+    }
+  }
+
   const netWealthFormatted =
     netWealth != null ? formatCurrency(netWealth, currency) : "—";
-  const nisabFormatted =
-    nisabValue != null ? formatCurrency(nisabValue, currency) : null;
-
-  // Nisab calculations
-  const standardName = nisabStandard === "GOLD" ? "Gold" : "Silver";
-  const gramsLabel = nisabGrams
-    ? `${nisabGrams}g`
-    : nisabStandard === "GOLD"
-      ? "87.48g"
-      : "612.36g";
 
   let shortfallFormatted: string | null = null;
   let surplusFormatted: string | null = null;
-  if (netWealth != null && nisabValue != null) {
+  if (netWealth != null && effectiveNisabValue != null) {
     const netNum = parseFloat(netWealth);
-    const nisabNum = parseFloat(nisabValue);
+    const nisabNum = parseFloat(effectiveNisabValue);
     if (!isNaN(netNum) && !isNaN(nisabNum)) {
       if (netNum < nisabNum) {
         shortfallFormatted = formatCurrency(
@@ -300,20 +339,20 @@ export function ZakatSummaryCard({ zakat, isTablet }: ZakatSummaryCardProps) {
               </Text>
             </Text>
 
-            {nisabFormatted ? (
+            {effectiveNisabFormatted ? (
               <>
                 <View style={styles.wealthDivider} />
                 <Text
                   style={[styles.wealthLabel, isDark && { color: "#94A3B8" }]}
                 >
-                  {`${standardName} nisab (${gramsLabel}): `}
+                  {`${standardName} nisab (${effectiveGramsLabel}): `}
                   <Text
                     style={[
                       styles.nisabStatusValue,
                       isDark && { color: "#5EEAD4" },
                     ]}
                   >
-                    {nisabFormatted}
+                    {effectiveNisabFormatted}
                   </Text>
                 </Text>
               </>
@@ -402,6 +441,115 @@ export function ZakatSummaryCard({ zakat, isTablet }: ZakatSummaryCardProps) {
           ) : null}
         </>
       )}
+
+      {/* Bangladesh Gold & Silver Price Ticker (BAJUS) */}
+      {isBdCurrency ? (
+        <View
+          style={[
+            styles.bdRatesBanner,
+            isDark && { backgroundColor: "#173E2E", borderColor: "#24523F" },
+          ]}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 8,
+            }}
+          >
+            <Text style={[styles.bdRateText, isDark && { color: "#C8E4D7" }]}>
+              <Text style={{ fontWeight: "700" }}>Gold 22K:</Text> ৳223,074/v
+              (৳19,125/g)
+            </Text>
+            <Text style={[styles.bdRateText, isDark && { color: "#C8E4D7" }]}>
+              <Text style={{ fontWeight: "700" }}>Gold 24K:</Text> ৳243,530/v
+              (৳20,879/g)
+            </Text>
+            <Text style={[styles.bdRateText, isDark && { color: "#C8E4D7" }]}>
+              <Text style={{ fontWeight: "700" }}>Silver 22K:</Text> ৳2,566/v
+              (৳220/g)
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginTop: 6,
+              paddingTop: 5,
+              borderTopWidth: 1,
+              borderTopColor: isDark ? "#24523F" : "#D1EADB",
+              flexWrap: "wrap",
+              gap: 6,
+            }}
+          >
+            <Text
+              style={[styles.bdRateSourceText, isDark && { color: "#6BB596" }]}
+            >
+              Official BAJUS Rates (Bangladesh Jewellers Association)
+            </Text>
+
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
+            >
+              <Text
+                style={[styles.benchmarkLabel, isDark && { color: "#A7D5C4" }]}
+              >
+                Pricing benchmark:
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="BAJUS (BD Market)"
+                onPress={() => setBenchmark("BAJUS")}
+                style={[
+                  styles.benchmarkChip,
+                  benchmark === "BAJUS"
+                    ? styles.benchmarkChipActive
+                    : isDark
+                      ? styles.benchmarkChipInactiveDark
+                      : styles.benchmarkChipInactiveLight,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.benchmarkChipText,
+                    benchmark === "BAJUS" && styles.benchmarkChipTextActive,
+                  ]}
+                >
+                  BAJUS (BD)
+                </Text>
+              </Pressable>
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="International Spot"
+                onPress={() => setBenchmark("INTERNATIONAL")}
+                style={[
+                  styles.benchmarkChip,
+                  benchmark === "INTERNATIONAL"
+                    ? styles.benchmarkChipActive
+                    : isDark
+                      ? styles.benchmarkChipInactiveDark
+                      : styles.benchmarkChipInactiveLight,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.benchmarkChipText,
+                    benchmark === "INTERNATIONAL" &&
+                      styles.benchmarkChipTextActive,
+                  ]}
+                >
+                  Spot
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -635,5 +783,65 @@ const styles = StyleSheet.create({
     fontFamily: "OutfitMedium",
     fontSize: 12.5,
     color: "#FFFFFF",
+  },
+  benchmarkSelectorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(15, 110, 86, 0.12)",
+  },
+  benchmarkLabel: {
+    fontFamily: "Outfit",
+    fontSize: 11,
+    color: "#5A6F68",
+  },
+  benchmarkChip: {
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  benchmarkChipActive: {
+    backgroundColor: "#0F6E56",
+    borderColor: "#0F6E56",
+  },
+  benchmarkChipInactiveLight: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "#CBD5E1",
+  },
+  benchmarkChipInactiveDark: {
+    backgroundColor: "#1D3B30",
+    borderColor: "#2E5748",
+  },
+  benchmarkChipText: {
+    fontFamily: "OutfitMedium",
+    fontSize: 10.5,
+    color: "#475569",
+  },
+  benchmarkChipTextActive: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+  },
+  bdRatesBanner: {
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: "#E2F3EB",
+    borderWidth: 1,
+    borderColor: "#C4E8D7",
+    gap: 4,
+  },
+  bdRateText: {
+    fontFamily: "Outfit",
+    fontSize: 11,
+    color: "#0F6E56",
+  },
+  bdRateSourceText: {
+    fontFamily: "Outfit",
+    fontSize: 9.5,
+    color: "#2C7A60",
   },
 });

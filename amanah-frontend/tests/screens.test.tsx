@@ -237,3 +237,39 @@ it("shows a real empty Home and routes Add expense to the form", async () => {
   await fireEvent.press(screen.getByRole("button", { name: "Add expense" }));
   expect(mockPush).toHaveBeenCalledWith("/transactions/new?type=EXPENSE");
 });
+
+it("displays Net income / Net loss and zakat impact on Home", async () => {
+  jest.mocked(useAccountQuery).mockReturnValueOnce({
+    data: {
+      monthlyFinance: {
+        income: "50000.00",
+        expenses: "20000.00",
+        currency: "BDT",
+        reasons: [],
+        status: "AVAILABLE",
+      },
+      zakat: {
+        estimate: "1500.00",
+        currency: "BDT",
+        status: "YEAR_IN_PROGRESS",
+        reasons: [],
+      },
+      prayer: null,
+      prayerUnavailableReason: "Unavailable",
+      recentTransactions: [],
+    },
+    error: null,
+    isPending: false,
+    refetch: jest.fn(),
+  } as any);
+  const screen = await render(<HomeScreen />);
+  expect(screen.getByText("Net income")).toBeTruthy();
+  expect(screen.getByText("SURPLUS")).toBeTruthy();
+  expect(screen.getByText("+৳30,000.00")).toBeTruthy();
+  expect(screen.getByText("60% saved")).toBeTruthy();
+  expect(
+    screen.getByText(
+      "Zakat impact: ~৳750.00 (2.5%) if surplus is held for 1 lunar year (hawl)",
+    ),
+  ).toBeTruthy();
+});

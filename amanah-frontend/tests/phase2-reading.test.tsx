@@ -4,6 +4,10 @@ import {
   QuranScreen,
   QuranReaderScreen,
 } from "../src/features/quran/QuranScreens";
+import {
+  DuaCategoryScreen,
+  DuaDetailScreen,
+} from "../src/features/dua/DuaScreens";
 import mockBundle from "../src/content/bundle.json";
 const mockPush = jest.fn(),
   mockMutation = jest.fn(),
@@ -11,7 +15,7 @@ const mockPush = jest.fn(),
     void args;
     return { data: {} };
   });
-let mockParams = { surah: "2", ayah: "255" };
+let mockParams: Record<string, string> = { surah: "2", ayah: "255" };
 const mockProgress = {
   surah: 2,
   ayah: 255,
@@ -116,4 +120,28 @@ it("search normalization finds unvocalized Arabic without changing the source te
   const original = mockBundle.payload.surahs[0]!.verses[1]!.arabic;
   expect(searchText(original)).toContain(searchText("الحمد"));
   expect(original).toBe(mockBundle.payload.surahs[0]!.verses[1]!.arabic);
+});
+
+it("renders dua detail with audio player and authentic recitation provenance", async () => {
+  mockParams = {
+    id: "entry-000001",
+    surah: "1",
+    category: "Supplications for when you wake up",
+  };
+  const screen = await render(<DuaDetailScreen />);
+  expect(screen.getByText("Muhammad Jumah · OpenDua")).toBeTruthy();
+  expect(screen.getAllByText("15s").length).toBeGreaterThan(0);
+});
+
+it("renders dua category listing with audio buttons for recitable duas", async () => {
+  mockParams = {
+    id: "entry-000001",
+    surah: "1",
+    category: "Supplications for when you wake up",
+  };
+  const screen = await render(<DuaCategoryScreen />);
+  expect(
+    screen.getAllByText("Supplications for when you wake up").length,
+  ).toBeGreaterThan(0);
+  expect(screen.getAllByText("Audio").length).toBeGreaterThan(0);
 });

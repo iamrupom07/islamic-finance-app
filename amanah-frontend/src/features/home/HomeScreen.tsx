@@ -19,6 +19,8 @@ import {
   BookOpen,
   CircleArrowUp,
   CircleArrowDown,
+  TrendingUp,
+  TrendingDown,
   Wallet,
   AlertCircle,
 } from "lucide-react-native";
@@ -188,6 +190,31 @@ export function HomeScreen() {
   const rawExpenses = d?.monthlyFinance?.expenses;
   const incomeFormatted = formatCurrency(rawIncome ?? "0", currency);
   const expensesFormatted = formatCurrency(rawExpenses ?? "0", currency);
+
+  const incomeNum = parseFloat(rawIncome ?? "0") || 0;
+  const expensesNum = parseFloat(rawExpenses ?? "0") || 0;
+  const netAmount = incomeNum - expensesNum;
+  const isNetIncome = netAmount >= 0;
+  const absNet = Math.abs(netAmount);
+  const netFormatted = formatCurrency(absNet.toFixed(2), currency);
+  const exactRate = incomeNum > 0 ? (absNet / incomeNum) * 100 : 0;
+  const savingsRateText =
+    incomeNum > 0
+      ? isNetIncome
+        ? expensesNum === 0 || netAmount >= incomeNum
+          ? "100% saved"
+          : exactRate >= 99 && exactRate < 100
+            ? `${exactRate.toFixed(1)}% saved`
+            : `${Math.round(exactRate)}% saved`
+        : exactRate >= 99 && exactRate < 100
+          ? `${exactRate.toFixed(1)}% deficit`
+          : `${Math.round(exactRate)}% deficit`
+      : null;
+  const potentialZakat =
+    isNetIncome && absNet > 0 ? (absNet * 0.025).toFixed(2) : null;
+  const potentialZakatFormatted = potentialZakat
+    ? formatCurrency(potentialZakat, currency)
+    : null;
 
   // Assets info
   const userAssets = assetsQuery.data?.items ?? [];
@@ -878,6 +905,206 @@ export function HomeScreen() {
           </View>
           <Text style={styles.metricAmount}>{expensesFormatted}</Text>
         </Pressable>
+      </View>
+
+      {/* 5b. Net Income / Net Loss (Monthly Zakat Savings Flow) */}
+      <View
+        style={[
+          styles.netCashFlowCard,
+          isDark && {
+            backgroundColor: "#162822",
+            borderColor: "#26483B",
+          },
+        ]}
+      >
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={isNetIncome ? "Net income" : "Net loss"}
+          onPress={() => router.push("/finance")}
+          style={({ pressed }) => [
+            styles.netCashFlowTopRow,
+            { opacity: pressed ? 0.85 : 1 },
+          ]}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 10,
+              flex: 1,
+            }}
+          >
+            <View
+              style={[
+                styles.netCashFlowIconCircle,
+                {
+                  backgroundColor: isNetIncome
+                    ? isDark
+                      ? "#173B2E"
+                      : "#DCF5EC"
+                    : isDark
+                      ? "#3D1E22"
+                      : "#FEECEC",
+                },
+              ]}
+            >
+              {isNetIncome ? (
+                <TrendingUp
+                  size={19}
+                  color={isDark ? "#5EEAD4" : "#0F6E56"}
+                  strokeWidth={2.2}
+                />
+              ) : (
+                <TrendingDown size={19} color="#EF4444" strokeWidth={2.2} />
+              )}
+            </View>
+            <View style={{ flex: 1 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <Text
+                  style={[
+                    styles.netCashFlowTitle,
+                    isDark && { color: "#FFFFFF" },
+                    {
+                      fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium",
+                    },
+                  ]}
+                >
+                  {isNetIncome ? "Net income" : "Net loss"}
+                </Text>
+                <View
+                  style={[
+                    styles.netCashFlowBadge,
+                    {
+                      backgroundColor: isNetIncome
+                        ? isDark
+                          ? "#173B2E"
+                          : "#DCF5EC"
+                        : isDark
+                          ? "#3D1E22"
+                          : "#FEECEC",
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.netCashFlowBadgeText,
+                      {
+                        color: isNetIncome
+                          ? isDark
+                            ? "#5EEAD4"
+                            : "#0F6E56"
+                          : "#EF4444",
+                      },
+                    ]}
+                  >
+                    {isNetIncome ? "SURPLUS" : "DEFICIT"}
+                  </Text>
+                </View>
+              </View>
+              <Text
+                style={[
+                  styles.netCashFlowSubtitle,
+                  isDark && { color: "#94A3B8" },
+                  {
+                    fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium",
+                  },
+                ]}
+              >
+                {isNetIncome
+                  ? "Retained savings this month"
+                  : "Living costs exceeded income"}
+              </Text>
+            </View>
+          </View>
+
+          <View style={{ alignItems: "flex-end" }}>
+            <Text
+              style={[
+                styles.netCashFlowAmount,
+                {
+                  color: isNetIncome
+                    ? isDark
+                      ? "#5EEAD4"
+                      : "#0F6E56"
+                    : "#EF4444",
+                  fontFamily: locale === "bn" ? "Bengali" : "OutfitMedium",
+                },
+              ]}
+            >
+              {`${isNetIncome ? "+" : "−"}${netFormatted}`}
+            </Text>
+            {savingsRateText ? (
+              <Text
+                style={[
+                  styles.netCashFlowRateText,
+                  {
+                    color: isNetIncome
+                      ? isDark
+                        ? "#A7D5C4"
+                        : "#0F6E56"
+                      : "#EF4444",
+                  },
+                ]}
+              >
+                {savingsRateText}
+              </Text>
+            ) : null}
+          </View>
+        </Pressable>
+
+        {/* Zakat Insight Note */}
+        <View
+          style={[
+            styles.netCashFlowZakatNote,
+            isDark && {
+              backgroundColor: "rgba(15, 110, 86, 0.12)",
+              borderTopColor: "#26483B",
+            },
+          ]}
+        >
+          <View style={{ flex: 1, paddingRight: 6 }}>
+            <Text
+              style={[
+                styles.netCashFlowZakatText,
+                isDark && { color: "#C8E4D7" },
+                {
+                  fontFamily: locale === "bn" ? "Bengali" : "Outfit",
+                },
+              ]}
+            >
+              {isNetIncome
+                ? potentialZakatFormatted
+                  ? `Zakat impact: ~${potentialZakatFormatted} (2.5%) if surplus is held for 1 lunar year (hawl)`
+                  : "Zakat impact: Retained savings contribute to zakat-eligible wealth above nisab"
+                : "Zakat impact: Monthly deficit reduces liquid reserves; no zakat due on losses"}
+            </Text>
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Zakat breakdown"
+            onPress={() => router.push("/zakat")}
+            style={({ pressed }) => [
+              styles.netCashFlowZakatLinkPill,
+              isDark && { backgroundColor: "#173E2E", borderColor: "#284A3B" },
+              { opacity: pressed ? 0.75 : 1 },
+            ]}
+          >
+            <Text
+              style={[
+                styles.netCashFlowZakatLinkText,
+                isDark && { color: "#5EEAD4" },
+              ]}
+            >
+              Zakat {">"}
+            </Text>
+          </Pressable>
+        </View>
       </View>
 
       {/* 6. Quick Action Buttons Row */}
@@ -1754,5 +1981,92 @@ const styles = StyleSheet.create({
     fontFamily: "OutfitMedium",
     color: "#0F6E56",
     fontSize: 14,
+  },
+  netCashFlowCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#EDF2EE",
+    marginBottom: 12,
+    overflow: "hidden",
+    shadowColor: "#0D4233",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  netCashFlowTopRow: {
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  netCashFlowIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  netCashFlowTitle: {
+    fontFamily: "OutfitMedium",
+    fontSize: 15,
+    color: "#182322",
+  },
+  netCashFlowSubtitle: {
+    fontFamily: "Outfit",
+    fontSize: 12,
+    color: "#64748B",
+    marginTop: 1,
+  },
+  netCashFlowBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 4,
+  },
+  netCashFlowBadgeText: {
+    fontFamily: "OutfitMedium",
+    fontSize: 10,
+    fontWeight: "700",
+  },
+  netCashFlowAmount: {
+    fontFamily: "OutfitMedium",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  netCashFlowRateText: {
+    fontFamily: "Outfit",
+    fontSize: 11,
+    marginTop: 2,
+  },
+  netCashFlowZakatNote: {
+    backgroundColor: "#F0FDF4",
+    borderTopWidth: 1,
+    borderTopColor: "#DCFCE7",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  netCashFlowZakatText: {
+    fontFamily: "Outfit",
+    fontSize: 12,
+    color: "#166534",
+    lineHeight: 16,
+  },
+  netCashFlowZakatLinkPill: {
+    backgroundColor: "#DCF5EC",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  netCashFlowZakatLinkText: {
+    fontFamily: "OutfitMedium",
+    fontSize: 11,
+    color: "#0F6E56",
+    fontWeight: "700",
   },
 });

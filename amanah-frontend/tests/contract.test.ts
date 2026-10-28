@@ -1,5 +1,12 @@
 import contract from "../contracts/openapi.json";
 import { responseValidators } from "../src/core/api/response-validators";
+import mockBundle from "../src/content/bundle.json";
+import {
+  duaTrack,
+  hasDuaAudio,
+  getDuaRecordings,
+  type ContentBundle,
+} from "../src/content/contract";
 it("has a runtime validator for every JSON application endpoint", () => {
   for (const [path, methods] of Object.entries(contract.paths)) {
     if (
@@ -34,3 +41,23 @@ it("accepts absent Quran progress as a genuine empty state", () =>
       meta: { requestId: "test" },
     }).success,
   ).toBe(true));
+
+it("constructs valid audio track for recitable dua with authentic provenance", () => {
+  const d = mockBundle.payload.duas[0]!;
+  expect(hasDuaAudio(d as any)).toBe(true);
+  const recs = getDuaRecordings(d as any);
+  expect(recs.length).toBeGreaterThan(0);
+  const track = duaTrack(mockBundle as unknown as ContentBundle, d.id);
+  expect(track.kind).toBe("DUA");
+  expect(track.duaId).toBe(d.id);
+  expect(track.artist).toBe("Muhammad Jumah");
+  expect(track.rights).toBe("https://opendua.org");
+  expect(track.url).toContain("https://audio.opendua.org");
+  expect(track.streamAllowed).toBe(true);
+});
+
+it("throws TRACK_UNAVAILABLE for non-existent dua", () => {
+  expect(() =>
+    duaTrack(mockBundle as unknown as ContentBundle, "non-existent"),
+  ).toThrow("TRACK_UNAVAILABLE");
+});
